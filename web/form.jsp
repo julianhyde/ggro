@@ -1,3 +1,5 @@
+<%-- Copyright (C) 2009-2009 Julian Hyde --%>
+<%-- $Id$ --%>
 <%@ page
     language="java"
     import="java.text.SimpleDateFormat,

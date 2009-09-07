@@ -1,5 +1,5 @@
 <%-- Copyright (C) 2009-2009 Julian Hyde --%>
-<%-- $Id: $ --%>
+<%-- $Id$ --%>
 <%@ page language="java" %>
 <%@ page import="java.io.*" %>
 <%@ page import="javax.xml.transform.*" %>
@@ -114,7 +114,7 @@
             byte[] stringArray;
             try {
                 // use appropriate encoding string!
-                stringArray = string.getBytes("UTF-8");s
+                stringArray = string.getBytes("UTF-8");
             } catch (Exception ignored) {
                 // use locale default rather than croak
                 stringArray = string.getBytes();

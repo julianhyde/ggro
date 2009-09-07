@@ -1,3 +1,5 @@
+<%-- Copyright (C) 2009-2009 Julian Hyde --%>
+<%-- $Id$ --%>
 <%@ page language="java" %>
 <%@ page import="java.io.*" %>
 <%@ page import="javax.xml.transform.*" %>
