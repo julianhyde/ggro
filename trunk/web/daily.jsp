@@ -143,7 +143,8 @@ function MM_swapImage() { //v3.0
             throw new RuntimeException("no <feed> element");
         }
         for (Node node : iterate(feedElement.getChildNodes())) {
-            if (node.getNodeType() == Node.ELEMENT_NODE
+            if (node != null
+                && node.getNodeType() == Node.ELEMENT_NODE
                 && node.getNodeName().equals("entry"))
             {
                 String id = findChild(node, "id").getTextContent();
