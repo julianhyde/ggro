@@ -87,7 +87,7 @@
         int size = 10;
 %>
 <tr>
-<td nowrap width='200' bgcolor="lightgray" <%= err == null ? "" : " bgcolor='pink'"%>><%= title + (err == null ? "" : " (" + err + ")") %></td>
+<td nowrap width='200' bgcolor='<%= err == null ? "lightgray" : "pink" %>'><%= title + (err == null ? "" : " (<b>" + err + "</b>)") %></td>
 <td bgcolor="lightgray"><input type='text' name='<%= var %>' value='<%= value %>' size='<%= size %>'/></td>
 </tr>
 <%
@@ -101,8 +101,7 @@
 <td colspan='2'>Comments</td>
 </tr>
 <tr>
-<td colspan='2'/>
-<textarea name='comments' rows='15' cols='60'><%= comments %></textarea>
+<td colspan='2'><textarea name='comments' rows='15' cols='60'><%= comments %></textarea></td>
 </tr>
 <tr>
 <td colspan='2'><input type='submit'/></td>
@@ -116,3 +115,4 @@
 
 </body>
 </html>
+

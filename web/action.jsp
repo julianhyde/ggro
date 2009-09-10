@@ -275,7 +275,7 @@
         "ssha",
         "coha",
         "gosh",
-        "rhsa",
+        "rsha",
         "bwha",
         "swha",
         "rtha",
@@ -338,6 +338,7 @@
             int count = (Integer) context.paramValues.get(parameter);
             if (count > 0 && parameter.length() == 4) {
                 ++actualSpeciesCount;
+                System.out.println("species " + parameter + " brings count to " + actualSpeciesCount);
             }
             actualTotalSightings += count;
         }
@@ -440,7 +441,7 @@
     for (String parameter : parameters) {
         if (isCount(parameter)) {
             Integer count = (Integer) context.paramValues.get(parameter);
-            if (count != null && count != 0) {
+            if (count != null && count != 0 && parameter.length() == 4) {
                 buf.append(parameter.toUpperCase())
                     .append('=')
                     .append(count)
@@ -452,52 +453,73 @@
     String tweetUrl = "http://u.nu/8mb63";
     // abbrev for http://ggro.org/hawkwatch/dailyhw09.html
     //String tweetUrl = "http://u.nu/5knx";
-    final String shortAnchor = new SimpleDateFormat("MMdd").format(date);
-    buf.append(tweetUrl).append("#").append(shortAnchor).append(" ");
+    buf.append(tweetUrl);
+    final String shortAnchor = "#" + new SimpleDateFormat("MMdd").format(date);
+    if (buf.length() + shortAnchor.length() <= 140) {
+        buf.append(shortAnchor);
+    }
     String comments = (String) context.paramValues.get("comments");
-    buf.append(comments.replaceAll(newline, " "));
-    if (buf.length() > 140) {
-        int i = 138;
-        while (i > 0 && buf.charAt(i) != ' ') {
-            --i;
+    if (buf.length() <= 137) {
+        buf.append(" ");
+        buf.append(comments.replaceAll(newline, " "));
+        if (buf.length() > 140) {
+            int i = 138;
+            while (i > 0 && buf.charAt(i) != ' ') {
+                --i;
+            }
+            while (i > 0 && buf.charAt(i) == ' ') {
+                --i;
+            }
+            buf.setLength(i + 1);
+            buf.append("...");
         }
-        while (i > 0 && buf.charAt(i) == ' ') {
-            --i;
-        }
-        buf.setLength(i);
-        buf.append("...");
     }
     String tweet = buf.toString();
 
     // Send tweet.
     if (!debug) {
         try {
-            URL url = new URL("http://twitter.com:80/statuses/update.xml");
-            String name = "hawkcount";
-            String password = "changeme";
-            HttpURLConnection connection =
-                (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setDoOutput(true);
-            connection.setRequestProperty(
-                "Content-Type", "application/x-www-form-urlencoded");
-            connection.setRequestProperty(
-                "Authorization",
-                "Basic " + Base64.encode(name + ":" + password));
-            String data =
-                URLEncoder.encode("status") + "=" + URLEncoder.encode(tweet);
-            connection.setRequestProperty("User-Agent", "myTwitterApp");
-            connection.setRequestProperty(
-                "Content-Length", "" + data.getBytes().length);
-            OutputStream oStream = connection.getOutputStream();
-            oStream.write(data.getBytes("UTF-8"));
-            oStream.flush();
-            oStream.close();
+            int responseCode = -1;
+            for (int i = 0; i < 10; i++) {
+                URL url = new URL("http://twitter.com:80/statuses/update.xml");
+                String name = "hawkcount";
+                String password = "changeme";
+                HttpURLConnection connection =
+                    (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setRequestProperty(
+                    "Content-Type", "application/x-www-form-urlencoded");
+                connection.setRequestProperty(
+                    "Authorization",
+                    "Basic " + Base64.encode(name + ":" + password));
+                String data =
+                    URLEncoder.encode("status") + "="
+                    + URLEncoder.encode(tweet);
+                connection.setRequestProperty("User-Agent", "myTwitterApp");
+                connection.setRequestProperty(
+                    "Content-Length", "" + data.getBytes().length);
+                OutputStream oStream = connection.getOutputStream();
+                oStream.write(data.getBytes("UTF-8"));
+                oStream.flush();
+                oStream.close();
 
-            int responseCode = connection.getResponseCode();
-            System.out.println(
-                "Sent tweet [" + tweet + "] at " + mailSentDate
-                + ", response=" + responseCode);
+                // HTTP 200 is success.
+                // But about 60% of the time, we get an HTTP 408. Wait 3
+                // seconds, and retry up to 10 times.
+                responseCode = connection.getResponseCode();
+                System.out.println(
+                    "Sent tweet [" + tweet + "] at " + mailSentDate
+                    + ", response=" + responseCode);
+                if (responseCode == 200) {
+                    break;
+                }
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
 %>
 <table>
 <tr>
@@ -538,7 +560,6 @@
         Element firstEntryElement = null;
         Element updatedElement = null;
         for (Node node : iterate(feedElement.getChildNodes())) {
-            System.out.println("node=" + node);
             if (node == null) {
                 continue;
             }
@@ -598,6 +619,7 @@
                 .replaceAll("\n", "<br/>\n")
                 .replaceAll("\r", "<br/>\n"));
         buf.append("<br/>\n")
+            .append("<br/>\n")
             .append("Total Sightings: ")
             .append(totalSightings)
             .append("<br/>\n")
