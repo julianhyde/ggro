@@ -54,7 +54,7 @@
 <head>
 <!-- #BeginEditable "doctitle" -->
 <title>Golden Gate Raptor Observatory</title>
-<link href="http://ggro.org/styles/ggro.css" rel="stylesheet" type="text/css">
+<link href="http://www.ggro.org/styles/ggro.css" rel="stylesheet" type="text/css">
 <style type="text/css">
 <!--
 .style1 {
@@ -103,17 +103,17 @@ function MM_swapImage() { //v3.0
 	font-weight: bold;
 }
 -->
-</style><link REL="SHORTCUT ICON" HREF="http://ggro.org/Templates/favicon.ico">
+</style><link REL="SHORTCUT ICON" HREF="http://www.ggro.org/Templates/favicon.ico">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
-<body bgcolor="#6388D6"  background="http://ggro.org/images/cloud-bg.jpg" text="#00000" link="#000066" vlink="#9A3300" onLoad="MM_preloadImages('../images/s-broadwing.jpg')">
+<body bgcolor="#6388D6"  background="http://www.ggro.org/images/cloud-bg.jpg" text="#00000" link="#000066" vlink="#9A3300" onLoad="MM_preloadImages('../images/s-broadwing.jpg')">
 <table width="700" border="0" align="left">
     <table width="661" border="0">
         <tr>
         <td align="center" valign="top" height="212">&nbsp;</td>
         <td valign="top" align="center"><p><br>
-            <a href="http://www.ggro.org" target="_blank"><img src="http://ggro.org/images/GGRO-Logo-new-2-color_shell.gif" width="150" height="152" border="0" class="logoBorder"></a></p>
+            <a href="http://www.ggro.org" target="_blank"><img src="http://www.ggro.org/images/GGRO-Logo-new-2-color_shell.gif" width="150" height="152" border="0" class="logoBorder"></a></p>
         </td>
         </tr>
         <tr>

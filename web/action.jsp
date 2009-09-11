@@ -16,7 +16,11 @@
 <%@ page import="javax.mail.*" %>
 <%@ page import="java.net.*" %>
 <%!
-    boolean debug = false;
+    // If true, doesn't tweet, and prints more diagnostics.
+    static final boolean debug = false;
+
+    // Same password for web form and for twitter.
+    static final String password = "changeme";
 
     static String htmlEncode(String s) {
         return s.replaceAll("\r\n", "<br/>")
@@ -143,6 +147,29 @@
         }
     }
 
+    static class StreamGobbler extends Thread {
+        final InputStream is;
+        final String type;
+
+        StreamGobbler(InputStream is, String type) {
+            this.is = is;
+            this.type = type;
+        }
+
+        public void run() {
+            try {
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+                String line;
+                while ((line = br.readLine()) != null) {
+                    System.out.println(type + ">" + line);
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+    }
+
     static class Context {
         final Map<String, String> fieldErrors =
             new LinkedHashMap<String, String>();
@@ -163,9 +190,19 @@
             if (required && (value == null || value.equals(""))) {
                 error(paramName, "Value is required");
                 return null;
-            } else {
-                return value;
             }
+            if (paramName.equals("password")) {
+                if (!value.equals(password)) {
+                    error(
+                        paramName,
+                        "Invalid password. Ask Jill Harley for the correct password.");
+                } else {
+                    // Mask out password so it doesn't appear in emails etc.
+                    value = "xxx";
+                    paramValues.put(paramName, value);
+                }
+            }
+            return value.trim();
         }
 
         Date validateDate(
@@ -263,6 +300,7 @@
     String[] parameters = {
         "date",
         "author",
+        "password",
         "total_sightings",
         "hours_counted",
         "hph",
@@ -299,7 +337,8 @@
         String name = parameters[i];
         context.paramValues.put(name, request.getParameter(name));
         if (name.equals("comments")
-            || name.equals("author"))
+            || name.equals("author")
+            || name.equals("password"))
         {
             context.validateString(name, true);
         } else if (name.equals("date")) {
@@ -366,7 +405,9 @@
         "GGRO Hawkwatch: "
         + new SimpleDateFormat("yyyy/MM/dd").format(date);
     String mailFrom = "julian@hydromatic.net";
-    String mailTo = "julianhyde@gmail.com";
+    String mailTo =
+        "julianhyde@gmail.com"
+        + ",jharley@parksconservancy.org";
     Date mailSentDate = new Date();
     StringBuilder buf = new StringBuilder();
     String newline = System.getProperty("line.separator");
@@ -449,10 +490,11 @@
             }
         }
     }
+    String tweetUrl;
     // abbrev for http://www.hydromatic.net/ggro/daily.jsp
-    String tweetUrl = "http://u.nu/8mb63";
-    // abbrev for http://ggro.org/hawkwatch/dailyhw09.html
-    //String tweetUrl = "http://u.nu/5knx";
+    if (false) tweetUrl = "http://u.nu/8mb63";
+    // abbrev for http://www.ggro.org/hawkwatch/dailyhw09.html
+    tweetUrl = "http://u.nu/5knx";
     buf.append(tweetUrl);
     final String shortAnchor = "#" + new SimpleDateFormat("MMdd").format(date);
     if (buf.length() + shortAnchor.length() <= 140) {
@@ -483,7 +525,7 @@
             for (int i = 0; i < 10; i++) {
                 URL url = new URL("http://twitter.com:80/statuses/update.xml");
                 String name = "hawkcount";
-                String password = "changeme";
+                String twitterPassword = password;
                 HttpURLConnection connection =
                     (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
@@ -542,7 +584,7 @@
     boolean success = false;
     Throwable throwable = null;
     String timestamp =
-        new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSZ").format(mailSentDate);
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(mailSentDate);
     try {
         File file = new File("/home/jhyde/ggro/feed.xml");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -669,7 +711,7 @@
         linkElement.setAttribute("type", "text/html");
         linkElement.setAttribute("type", "text/html");
         linkElement.setAttribute(
-            "href", "http://ggro.org/hawkwatch/dailyhw09.html");
+            "href", "http://www.ggro.org/hawkwatch/dailyhw09.html#" + anchor);
         linkElement.setAttribute("title", title);
 
         // feed/entry/link#2
@@ -678,7 +720,7 @@
         link2Element.setAttribute("rel", "self");
         link2Element.setAttribute("type", "application/atom+xml");
         link2Element.setAttribute(
-            "href", "http://www.hydromatic.net/ggro.xml#" + anchor);
+            "href", "http://www.ggro.org/feed.xml#" + anchor);
 
         // feed/entry/author
         Element authorElement = doc.createElement("author");
@@ -713,10 +755,7 @@
 %>
 <table>
 <tr>
-<td colspan='2'><p>Feed updated successfully.</p>
-
-<p>Results should be visible at <a href="daily.jsp">Daily Hawkwatch Count
-Page</a>.</p></td>
+<td colspan='2'><p>Local feed updated successfully. (See <a href="feed.xml" target=_blank>feed</a>.)</p></td>
 </table>
 <%
     } else {
@@ -729,6 +768,35 @@ Page</a>.</p></td>
     }
 %>
 
+<%
+    // Run shell script to publish.
+    try {
+        final Runtime runtime = Runtime.getRuntime();
+        final Process process = runtime.exec("/home/jhyde/ggro/publish.sh");
+        new StreamGobbler(process.getInputStream(), "out");
+        new StreamGobbler(process.getErrorStream(), "err");
+        int rc = process.waitFor();
+        if (rc == 0) {
+%>
+<table>
+<tr>
+<td colspan='2'><p>Published successfully.</p>
+<p>Results should be visible at
+    <a href="http://www.ggro.org/hawkwatch/dailyhw09.html" target=_blank>Daily Hawkwatch Count Page</a> and
+    <a href="http://www.ggro.org/feed.xml" target="_blank">feed</a>.</p></td>
+</table>
+<%
+        } else {
+            throw new RuntimeException("Command returned status " + rc);
+        }
+    } catch (Throwable t) {
+%>
+<p>Failed to update RSS feed:
+<%= throwable.getClass() %>: <%= throwable.getMessage() %></p>
+<%
+        t.printStackTrace();
+    }
+%>
 
 <p>Successful!</p>
 </body>
