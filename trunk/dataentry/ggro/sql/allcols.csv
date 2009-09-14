@@ -1,0 +1,73 @@
+0,DATE_,datetime,!,!,!
+1,TIME_,int,!,!,!
+2,MINVIS,float,Minimum visibility,!,weathersheet
+3,VISIBILITY,float,Maximum visibility,!,weathersheet
+4,TEMP,float,Air temperature,!,weathersheet
+5,SKYCODE,char(1),Sky code,!,weathersheet
+6,WINDSPEED,int,Wind Speed code,!,weathersheet
+7,WINDFROM,char(5),Wind direction (from),!,weathersheet
+8,VISITORS,int,Visitors (per hour),!,weathersheet
+9,MINUTES,int,Minutes (per hour),!,weathersheet
+10,OBSERVERS,int,Crew number (per hour),!,weathersheet
+11,TUVU,int,Turkey Vulture,!,hawksheet
+12,OSPR,int,Osprey,!,hawksheet
+13,WTKIJUV,int,White-tailed Kite,     Juvenile,hawksheet
+14,WTKIAD,int,White-tailed Kite,     Adult,hawksheet
+15,WTKIUND,int,White-tailed Kite,     Undocumented,hawksheet
+16,BAEA,int,Bald Eagle,!,hawksheet
+17,NOHAJUV,int,Northern Harrier,     Juvenile,hawksheet
+18,NOHAADF,int,Northern Harrier,     Adult Female,hawksheet
+19,NOHAADM,int,Northern Harrier,     Adult Male,hawksheet
+20,NOHAUND,int,Northern Harrier,     Undocumented,hawksheet
+21,SSHAJUV,int,Sharp-shinned Hawk,     Juvenile,hawksheet
+22,SSHAAD,int,Sharp-shinned Hawk,     Adult,hawksheet
+23,SSHAUND,int,Sharp-shinned Hawk,     Undocumented,hawksheet
+24,COHAJUV,int,Cooper's Hawk,     Juvenile,hawksheet
+25,COHAAD,int,Cooper's Hawk,     Adult,hawksheet
+26,COHAUND,int,Cooper's Hawk,     Undocumented,hawksheet
+27,GOSH,int,Goshawk,!,hawksheet
+28,RSHAJUV,int,Red-shouldered Hawk,     Juvenile,hawksheet
+29,RSHAAD,int,Red-shouldered Hawk,     Adult,hawksheet
+30,RSHAUND,int,Red-shouldered Hawk,     Undocumented,hawksheet
+31,BWHAJUV,int,Broad-winged Hawk,     Juvenile,hawksheet
+32,BWHAAD,int,Broad-winged Hawk,     Adult,hawksheet
+33,BWHAUND,int,Broad-winged Hawk,     Undocumented,hawksheet
+34,SWHA,int,Swainson's Hawk,!,hawksheet
+35,RTHAJUV,int,Red-tailed Hawk,     Juvenile,hawksheet
+36,RTHAAD,int,Red-tailed Hawk,     Adult,hawksheet
+37,RTHAUND,int,Red-tailed Hawk,     Undocumented,hawksheet
+38,FEHAJUV,int,Ferruginous Hawk,     Juvenile,hawksheet
+39,FEHAAD,int,Ferruginous Hawk,     Adult,hawksheet
+40,FEHAUND,int,Ferruginous Hawk,     Undocumented,hawksheet
+41,RLHA,int,Rough-legged Hawk,!,hawksheet
+42,GOEAAD,int,Golden Eagle,     Juvenile,hawksheet
+43,GOEAJUV,int,Golden Eagle,     Adult,hawksheet
+44,GOEAUND,int,Golden Eagle,     Undocumented,hawksheet
+45,AMKEF,int,American Kestrel,     Male,hawksheet
+46,AMKEM,int,American Kestrel,     Female,hawksheet
+47,AMKEUND,int,American Kestrel,     Undocumented,hawksheet
+48,MERL,int,Merlin,!,hawksheet
+49,PEFAJUV,int,Peregrine,     Juvenile,hawksheet
+50,PEFAAD,int,Peregrine,     Adult,hawksheet
+51,PEFAUND,int,Peregrine,     Undocumented,hawksheet
+52,PRFA,int,Prairie Falcon,!,hawksheet
+53,GYRF,int,!,!,!
+54,ACCIPITER,int,Unidentified,     Accipiter,hawksheet
+55,BUTEO,int,Unidentified,     Buteo,hawksheet
+56,FALCON,int,Unidentified,     Falcon,hawksheet
+57,EAGLE,int,Unidentified,     Eagle,hawksheet
+58,RAPTOR,int,Unidentified,     Raptor,hawksheet
+59,TOTALHAWKS,int,!,!,hawksheet
+60,d_RTHAJUV,int,Broad-winged Hawk,     Juvenile,morphsheet
+61,d_RTHAAD,int,Broad-winged Hawk,     Adult,morphsheet
+62,d_RTHAUND,int,Broad-winged Hawk,     Undocumented,morphsheet
+63,d_BWHAJUV,int,Swainson's Hawk,!,morphsheet
+64,d_BWHAAD,int,Red-tailed Hawk,     Juvenile,morphsheet
+65,d_BWHAUND,int,Red-tailed Hawk,     Adult,morphsheet
+66,d_FEHAJUV,int,Red-tailed Hawk,     Undocumented,morphsheet
+67,d_FEHAAD,int,Ferruginous Hawk,     Juvenile,morphsheet
+68,d_FEHAUND,int,Ferruginous Hawk,     Adult,morphsheet
+69,d_SWHA,int,Ferruginous Hawk,     Undocumented,morphsheet
+70,d_RLHA,int,Rough-legged Hawk,!,morphsheet
+71,COMMENTS,char(128),Comment,!,commentsheet
+72,DAYLEADER,char(5),Day Leader Initials,!,weathersheet
