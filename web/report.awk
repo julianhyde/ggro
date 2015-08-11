@@ -1,5 +1,5 @@
 function isMeasure(i) {
-    return i >= 8 \
+    return i >= 7 \
         || field_names[i] == "total_sightings" \
         || field_names[i] == "hours_counted";
 }
@@ -102,23 +102,34 @@ FNR == 1 {
 FNR > 1 {
     date = $1;
     author = $2;
-    location = $3;
-    total_sightings = $4;
-    hours_counted = $5;
-    hph = $6;
-    total_species = $7;
+    total_sightings = $3;
+    hours_counted = $4;
+    hph = $5;
+    total_species = $6;
     for (i = 1; i <= NF; i++) {
         totals[i] += $i;
+        dow_totals[i, FNR % 7] = $i;
+        week_totals[i] = 0;
+        for (j = 0; j < 7; j++) {
+            week_totals[i] += dow_totals[i, j];
+        }
     }
     days[day_count] = date;
     day_totals[day_count] = total_sightings;
     day_hphs[day_count] = hph;
     day_hours[day_count] = hours_counted;
     day_species_counts[day_count] = total_species;
+
+#    printf "\n%d\n", FNR;
+#    for (i = 1; i < 20; i++) {
+#printf "  %s: %d (", field_names[i], week_totals[i];
+#for (j = 0; j < 7; j++) printf "%d ", dow_totals[i, j];
+#printf ")\n";
+#    }
     ++day_count;
 }
 END {
-    total_hours = totals[5];
+    total_hours = totals[4];
 
     printf "<html>\n";
     printf "<head>\n";
@@ -129,7 +140,6 @@ END {
     printf "<h1>GGRO reports</h1>\n";
     printf "<p>These reports are updated daily based on the data in the <a href='events/hawkwatchToday.aspx'>Hawkwatch Today!</a> blog.</p>\n";
     printf "<p>Data have not been entirely checked &mdash; contact Buzz Hull at bhull@parksconservancy.org for final results and for permission to use.</p>\n";
-    printf "<p>In the 2010 season, data may be collected at different hawkwatching sites on different days and are not comparable.</p>\n";
 
     # Horizontal table
     if (0) {
@@ -157,7 +167,7 @@ END {
     printf "<th>Count</th>\n";
     for (i = 1; i <= field_count; i++) {
         if (isMeasure(i)) {
-            printf "<td>%d</td>\n", totals[i];
+            printf "<td>%s</td>\n", totals[i];
         }
     }
     printf "</tr>\n";
@@ -177,28 +187,31 @@ END {
     printf "<h2>Species totals for the season to date</h2>\n";
 
     printf "<table frame=border cellpadding=2 cellspacing=3>\n";
-    printf "<tr><th>Species</th><th>Count</th><th>&nbsp;Per hour</th></tr>\n";
-    for (i = 6; i <= field_count; i++) {
+    printf "<tr><th>Species</th><th>Count</th><th>&nbsp;Per hour</th><th>Last week</th></tr>\n";
+    for (i = 5; i <= field_count; i++) {
         if (field_names[i] == "unid_accipiter") {
             printf "<tr><td colspan=3>&nbsp;</td></tr>\n";
             printf "<tr><td>Unidentified:</td><td colspan=2>&nbsp;</td></tr>\n";
         }
         if (isMeasure(i)) {
-            printf "<tr><td>%s</td><td align=right>%s</td><td align=right>%.1f</td>\n", \
+            printf "<tr><td>%s</td><td align=right>%s</td><td align=right>%.1f</td><td align=right>%s</td>\n", \
                 sanitize(field_names[i]), \
                 intToString(totals[i]), \
-                totals[i] / total_hours;
+                totals[i] / total_hours, \
+                intToString(week_totals[i]);
         }
     }
-    printf "<tr><td colspan=3>&nbsp;</td></tr>\n";
-    printf "<tr><td>%s</td><td align=right>%s</td><td align=right>%.1f</td>\n", \
+    printf "<tr><td colspan=4>&nbsp;</td></tr>\n";
+    printf "<tr><td>%s</td><td align=right>%s</td><td align=right>%.1f</td><td align=right>%s</td>\n", \
         "Total", \
-        intToString(totals[4]), \
-        totals[4] / total_hours;
-    printf "<tr><td>%s</td><td align=right>%s</td><td align=right>%.1f</td>\n", \
+        intToString(totals[3]), \
+        totals[3] / total_hours, \
+        intToString(week_totals[3]);
+    printf "<tr><td>%s</td><td align=right>%s</td><td align=right>%.1f</td><td align=right>%.1f</td>\n", \
         "Hours", \
-        intToString(totals[5]), \
-        totals[5] / total_hours;
+        totals[4], \
+        totals[4] / total_hours, \
+        week_totals[4];
     printf "</table>\n";
 
     printf "<h2>Daily totals</h2>\n";
@@ -237,7 +250,7 @@ END {
         day_of_week = (julian(year, month, day_of_month) + 5) % 7;
         printf "<td align=right>%s&nbsp;%s</td>", \
             week_days[day_of_week], \
-            ((julian(1, month, day_of_month - (day_of_week + 6) % 7) + 11) % 14) < 7 ? "I" : "II";
+            ((julian(1, month, day_of_month - (day_of_week + 6) % 7) + 18) % 14) < 7 ? "I" : "II";
         printf "<td align=right>%s</td>", hoursToString(day_hours[i]);
         day_total = day_totals[i];
         hph = day_hphs[i];

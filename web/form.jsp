@@ -9,7 +9,6 @@
     String[][] fields = {
         {"Date", "date"},
         {"Author(s)", "author"},
-        {"Location", "location"},
         {"Password", "password"},
         {"Total Sightings", "total_sightings"},
         {"Hours Counted", "hours_counted"},

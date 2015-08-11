@@ -12,8 +12,9 @@
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.text.ParsePosition" %>
 <%@ page import="java.math.BigDecimal" %>
-<%@ page import="javax.mail.internet.MimeMessage" %>
+<%@ page import="javax.mail.internet.*" %>
 <%@ page import="javax.mail.*" %>
+<%@ page import="javax.mail.PasswordAuthentication" %>
 <%@ page import="java.net.*" %>
 <%!
     // If true, doesn't tweet, and prints more diagnostics.
@@ -38,7 +39,6 @@
         String[][] fields = {
             {"Date", "date"},
             {"Author(s)", "author"},
-            {"Location", "location"},
             {"Total Sightings", "total_sightings"},
             {"Hours Counted", "hours_counted"},
             {"HPH", "hph"},
@@ -100,8 +100,112 @@
         };
     }
 
-    static class Base64 {
+    static int tweet(String password, String tweet, Date mailSentDate) throws java.io.IOException {
+        if (false) {
+            return tweetViaApi(password, tweet, mailSentDate);
+        }
+        return tweetViaEmail(password, tweet, mailSentDate);
+    }
 
+    static int tweetViaApi(String password, String tweet, Date mailSentDate) throws java.io.IOException {
+        int responseCode = -1;
+        for (int i = 0; i < 10; i++) {
+            URL url = new URL("http://twitter.com:80/statuses/update.xml?source=twitterandroid&lat=37.82853&long=-122.498771");
+            String name = "hawkcount";
+            String twitterPassword = password;
+            HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty(
+                "Content-Type", "application/x-www-form-urlencoded");
+            connection.setRequestProperty(
+                "Authorization",
+                "Basic " + Base64.encode(name + ":" + password));
+            String data =
+                URLEncoder.encode("status") + "="
+                + URLEncoder.encode(tweet);
+            connection.setRequestProperty("User-Agent", "myTwitterApp");
+            connection.setRequestProperty(
+                "Content-Length", "" + data.getBytes().length);
+            OutputStream oStream = connection.getOutputStream();
+            oStream.write(data.getBytes("UTF-8"));
+            oStream.flush();
+            oStream.close();
+
+            // HTTP 200 is success.
+            // But about 60% of the time, we get an HTTP 408. Wait 3
+            // seconds, and retry up to 10 times.
+            responseCode = connection.getResponseCode();
+            System.out.println(
+                "Sent tweet [" + tweet + "] at " + mailSentDate
+                + ", response=" + responseCode);
+            if (responseCode == 200) {
+                break;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+        return responseCode;
+    }
+
+    static int tweetViaEmail(String password, String tweet, Date mailSentDate) throws java.io.IOException {
+        try {
+            email(
+                "tweet@tweetymail.com",
+                tweet,
+                mailSentDate,
+                "");
+            return 0;
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new IOException(e.getMessage());
+        }
+    }
+
+    static void email(
+        String mailTo,
+        String mailSubject,
+        Date mailSentDate,
+        String mailText)
+        throws MessagingException
+    {
+        final String username = "julianhyde@gmail.com";
+        final String password = "changeme";
+
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.socketFactory.port", "465");
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.port", "465");
+ 
+        Session mailSession = Session.getInstance(
+            props,
+            new javax.mail.Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password);
+                }
+            });
+
+        MimeMessage message = new MimeMessage(mailSession);
+        message.setFrom(new InternetAddress("julianhyde@gmail.com"));
+        message.setRecipients(
+            Message.RecipientType.TO,
+            mailTo);
+        message.setSubject(mailSubject);
+        message.setSentDate(mailSentDate);
+        message.setText(mailText);
+        if (!debug) {
+            Transport.send(message);
+        }
+        System.out.println("action.jsp: email sent"); 
+    }
+
+    static class Base64 {
         public static String base64code =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             + "abcdefghijklmnopqrstuvwxyz"
@@ -179,7 +283,6 @@
         final String[] parameters = {
             "date",
             "author",
-            "location",
             "password",
             "total_sightings",
             "hours_counted",
@@ -237,14 +340,6 @@
                     // Mask out password so it doesn't appear in emails etc.
                     value = "xxx";
                     paramValues.put(paramName, value);
-                }
-            }
-            if (paramName.equals("location")) {
-                if (!value.equals("HAWK")
-                    && !value.equals("SLAK")) {
-                    error(
-                        paramName,
-                        "Invalid location. Value must be 'HAWK' or 'SLAK'.");
                 }
             }
             return value.trim();
@@ -336,11 +431,10 @@
 
         /**
          * Append to data file.
-         * Fields: date,author,location,total_sightings,hours_counted,hph,total_species,tuvu, ... ,unid_raptor
+         * Fields: date,author,total_sightings,hours_counted,hph,total_species,tuvu, ... ,unid_raptor
          */ 
         void appendToFile(
             Date date,
-            String location,
             BigDecimal hph,
             int totalSpecies)
             throws IOException
@@ -351,8 +445,6 @@
             buf.append(new SimpleDateFormat("yyyyMMdd").format(date))
                 .append(',')
                 .append(paramValues.get("author"))
-                .append(',')
-                .append(location)
                 .append(',')
                 .append(paramValues.get("total_sightings"))
                 .append(',')
@@ -384,6 +476,7 @@
 </head>
 <body>
 <%
+System.out.println("action.jsp at " + new Date());
     StringBuilder buf = new StringBuilder();
     Context context = new Context();
     Date date = null;
@@ -392,8 +485,7 @@
         context.paramValues.put(name, request.getParameter(name));
         if (name.equals("comments")
             || name.equals("author")
-            || name.equals("password")
-            || name.equals("location"))
+            || name.equals("password"))
         {
             context.validateString(name, true);
         } else if (name.equals("date")) {
@@ -415,10 +507,11 @@
         }
     }
     if (!context.fieldErrors.isEmpty()) {
+System.out.println("action.jsp " + context.fieldErrors);
         context.forward(request, response);
         return;
     }
-    String location = (String) context.paramValues.get("location");
+System.out.println("action.jsp y");
     int totalSightings =
        (Integer) context.paramValues.get("total_sightings");
     int totalSpecies =
@@ -486,7 +579,7 @@
 <p>Validation successful!</p>
 <%
     if (!debug) {
-        context.appendToFile(date, location, hph, totalSpecies);
+        context.appendToFile(date, hph, totalSpecies);
     }
 
     // Compose email
@@ -508,23 +601,9 @@
     }
     String mailText = buf.toString();
 
-    // Send email
-    Properties props = new Properties();
-    props.put("mail.smtp.host", "localhost");
-    props.put("mail.from", mailFrom);
-    javax.mail.Session mailSession = javax.mail.Session.getInstance(props, null);
+    if (false) 
     try {
-        MimeMessage msg = new MimeMessage(mailSession);
-        msg.setFrom();
-        msg.setRecipients(
-            Message.RecipientType.TO,
-            mailTo);
-        msg.setSubject(mailSubject);
-        msg.setSentDate(mailSentDate);
-        msg.setText(mailText);
-        if (!debug) {
-            Transport.send(msg);
-        }
+        email(mailTo, mailSubject, mailSentDate, mailText);
     } catch (MessagingException mex) {
 %>
 <p>Failed to send email: <%= mex.getMessage() %></p>
@@ -558,16 +637,12 @@
     //      108 3.17h 34.11/h 5sp TUVU=42 OSPR=1 COHA=9 RTHA=45 AMKE=3
     //      http://u.nu/8mb63#0831 SLAK: I emerged from the NPS dorm this
     //      morning amazed and dismayed...
-    //
-    // The 'h*' means that counting was on Slacker Hill.
 
     buf.setLength(0);
     buf.append(totalSightings)
         .append(' ')
         .append(hoursCounted)
-        .append("h")
-        .append(location.equals("SLAK") ? "*" : "")
-        .append(" ")
+        .append("h ")
         .append(hph)
         .append("/h ")
         .append(totalSpecies)
@@ -590,12 +665,14 @@
     if (false) tweetUrl = "http://u.nu/5knx";
     // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
     if (false) tweetUrl = "http://u.nu/67aj3";
-    tweetUrl = "http://3.ly/ggro";
-    // shorter abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
-    buf.append(tweetUrl);
-    final String shortAnchor = "#" + new SimpleDateFormat("MMdd").format(date);
-    if (buf.length() + shortAnchor.length() <= 140) {
-        buf.append(shortAnchor);
+    if (false) tweetUrl = "http://3.ly/ggro";
+    if (true) tweetUrl = "is.gd/PbDDqy";
+    if (false) tweetUrl = "t.co/mzFFpTr";
+    if (false) tweetUrl = "http://www.ggro.org/events/hawkwatchToday.aspx";
+    tweetUrl += "#" + new SimpleDateFormat("MMdd").format(date);
+    String placeholder = "xxxxxxxxxxxxxxxxxxxxx"; // 22 chars
+    if (buf.length() + placeholder.length() <= 140) {
+        buf.append(placeholder);
     }
     String comments = (String) context.paramValues.get("comments");
     String body = comments.replaceAll(newline, " ");
@@ -604,7 +681,7 @@
         buf.append(body);
     }
     if (buf.length() > 140) {
-        int i = 138;
+        int i = 137;
         while (i > 0 && buf.charAt(i) != ' ') {
             --i;
         }
@@ -614,52 +691,12 @@
         buf.setLength(i + 1);
         buf.append("...");
     }
-    String tweet = buf.toString();
+    String tweet = buf.toString().replace(placeholder, tweetUrl);
 
     // Send tweet.
     if (true) {
         try {
-            int responseCode = -1;
-            for (int i = 0; i < 10; i++) {
-                URL url = new URL("http://twitter.com:80/statuses/update.xml?source=twitterandroid&lat=37.82853&long=-122.498771");
-                String name = "hawkcount";
-                String twitterPassword = password;
-                HttpURLConnection connection =
-                    (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setDoOutput(true);
-                connection.setRequestProperty(
-                    "Content-Type", "application/x-www-form-urlencoded");
-                connection.setRequestProperty(
-                    "Authorization",
-                    "Basic " + Base64.encode(name + ":" + password));
-                String data =
-                    URLEncoder.encode("status") + "="
-                    + URLEncoder.encode(tweet);
-                connection.setRequestProperty("User-Agent", "myTwitterApp");
-                connection.setRequestProperty(
-                    "Content-Length", "" + data.getBytes().length);
-                OutputStream oStream = connection.getOutputStream();
-                oStream.write(data.getBytes("UTF-8"));
-                oStream.flush();
-                oStream.close();
-
-                // HTTP 200 is success.
-                // But about 60% of the time, we get an HTTP 408. Wait 3
-                // seconds, and retry up to 10 times.
-                responseCode = connection.getResponseCode();
-                System.out.println(
-                    "Sent tweet [" + tweet + "] at " + mailSentDate
-                    + ", response=" + responseCode);
-                if (responseCode == 200) {
-                    break;
-                }
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-            }
+            int responseCode = tweet(password, tweet, mailSentDate);
 %>
 <table>
 <tr>
@@ -765,7 +802,6 @@
             .append("<br/>\n")
             .append("Hours Counted: ")
             .append(hoursCounted)
-            .append(location.equals("SLAK") ? "*" : "")
             .append("<br/>\n")
             .append("HPH: ")
             .append(hph)
