@@ -1,5 +1,5 @@
 <%-- Copyright (C) 2009-2009 Julian Hyde --%>
-<%-- $Id$ --%>
+<%-- $Id: form.jsp 4 2009-09-07 21:19:10Z julianhyde $ --%>
 <%@ page
     language="java"
     import="java.text.SimpleDateFormat,
@@ -9,6 +9,7 @@
     String[][] fields = {
         {"Date", "date"},
         {"Author(s)", "author"},
+        {"Location", "location"},
         {"Password", "password"},
         {"Total Sightings", "total_sightings"},
         {"Hours Counted", "hours_counted"},

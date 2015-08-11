@@ -1,5 +1,5 @@
 <%-- Copyright (C) 2009-2009 Julian Hyde --%>
-<%-- $Id$ --%>
+<%-- $Id: action.jsp 4 2009-09-07 21:19:10Z julianhyde $ --%>
 <%@ page language="java" %>
 <%@ page import="java.io.*" %>
 <%@ page import="javax.xml.transform.*" %>
@@ -38,6 +38,7 @@
         String[][] fields = {
             {"Date", "date"},
             {"Author(s)", "author"},
+            {"Location", "location"},
             {"Total Sightings", "total_sightings"},
             {"Hours Counted", "hours_counted"},
             {"HPH", "hph"},
@@ -175,6 +176,42 @@
             new LinkedHashMap<String, String>();
         final Map<String, Object> paramValues = new HashMap<String, Object>();
 
+        final String[] parameters = {
+            "date",
+            "author",
+            "location",
+            "password",
+            "total_sightings",
+            "hours_counted",
+            "hph",
+            "total_species",
+            "tuvu",
+            "ospr", 
+            "wtki",      
+            "baea",
+            "noha",
+            "ssha",
+            "coha",
+            "gosh",
+            "rsha",
+            "bwha",
+            "swha",
+            "rtha",
+            "feha",
+            "rlha",
+            "goea",
+            "amke",
+            "merl",
+            "pefa",
+            "prfa",
+            "unid_accipiter",
+            "unid_buteo",
+            "unid_eagle",
+            "unid_falcon",
+            "unid_raptor",
+            "comments",
+        };
+
         void error(
             String paramName,
             String text)
@@ -200,6 +237,14 @@
                     // Mask out password so it doesn't appear in emails etc.
                     value = "xxx";
                     paramValues.put(paramName, value);
+                }
+            }
+            if (paramName.equals("location")) {
+                if (!value.equals("HAWK")
+                    && !value.equals("SLAK")) {
+                    error(
+                        paramName,
+                        "Invalid location. Value must be 'HAWK' or 'SLAK'.");
                 }
             }
             return value.trim();
@@ -288,6 +333,48 @@
             request.getRequestDispatcher("form.jsp")
                 .forward(request, response);
         }
+
+        /**
+         * Append to data file.
+         * Fields: date,author,location,total_sightings,hours_counted,hph,total_species,tuvu, ... ,unid_raptor
+         */ 
+        void appendToFile(
+            Date date,
+            String location,
+            BigDecimal hph,
+            int totalSpecies)
+            throws IOException
+        {
+            FileWriter fw = new FileWriter(new File("/home/jhyde/ggro/data.csv"), true);
+            PrintWriter pw = new PrintWriter(fw);
+            StringBuilder buf = new StringBuilder();
+            buf.append(new SimpleDateFormat("yyyyMMdd").format(date))
+                .append(',')
+                .append(paramValues.get("author"))
+                .append(',')
+                .append(location)
+                .append(',')
+                .append(paramValues.get("total_sightings"))
+                .append(',')
+                .append(paramValues.get("hours_counted"))
+                .append(',')
+                .append(hph)
+                .append(',')
+                .append(totalSpecies);
+            for (String parameter : parameters) {
+                if (isCount(parameter)) {
+                    Integer count = (Integer) paramValues.get(parameter);
+                    if (count == null) {
+                        count = 0;
+                    }
+                    buf.append(',')
+                        .append(count);
+                }
+            }
+            pw.println(buf.toString());
+            pw.close();
+            fw.close();
+        }
     }
 %>
 <html>
@@ -297,48 +384,16 @@
 </head>
 <body>
 <%
-    String[] parameters = {
-        "date",
-        "author",
-        "password",
-        "total_sightings",
-        "hours_counted",
-        "hph",
-        "total_species",
-        "tuvu",
-        "ospr", 
-        "wtki",      
-        "baea",
-        "noha",
-        "ssha",
-        "coha",
-        "gosh",
-        "rsha",
-        "bwha",
-        "swha",
-        "rtha",
-        "feha",
-        "rlha",
-        "goea",
-        "amke",
-        "merl",
-        "pefa",
-        "prfa",
-        "unid_accipiter",
-        "unid_buteo",
-        "unid_eagle",
-        "unid_falcon",
-        "unid_raptor",
-        "comments",
-    };
+    StringBuilder buf = new StringBuilder();
     Context context = new Context();
     Date date = null;
-    for (int i = 0; i < parameters.length; ++i) {
-        String name = parameters[i];
+    for (int i = 0; i < context.parameters.length; ++i) {
+        String name = context.parameters[i];
         context.paramValues.put(name, request.getParameter(name));
         if (name.equals("comments")
             || name.equals("author")
-            || name.equals("password"))
+            || name.equals("password")
+            || name.equals("location"))
         {
             context.validateString(name, true);
         } else if (name.equals("date")) {
@@ -363,6 +418,7 @@
         context.forward(request, response);
         return;
     }
+    String location = (String) context.paramValues.get("location");
     int totalSightings =
        (Integer) context.paramValues.get("total_sightings");
     int totalSpecies =
@@ -372,12 +428,11 @@
     BigDecimal hph = (BigDecimal) context.paramValues.get("hph");
     int actualTotalSightings = 0;
     int actualSpeciesCount = 0;
-    for (String parameter : parameters) {
+    for (String parameter : context.parameters) {
         if (isCount(parameter)) {
             int count = (Integer) context.paramValues.get(parameter);
             if (count > 0 && parameter.length() == 4) {
                 ++actualSpeciesCount;
-                System.out.println("species " + parameter + " brings count to " + actualSpeciesCount);
             }
             actualTotalSightings += count;
         }
@@ -393,6 +448,36 @@
             "Does not match computed total sightings "
             + actualTotalSightings);
     }
+    if (hoursCounted.compareTo(new BigDecimal("0.1")) > 0) {
+        BigDecimal totalSightingsBd = new BigDecimal(totalSightings);
+        BigDecimal computedTotalSightings =
+            hph
+                .multiply(hoursCounted);
+        if (!computedTotalSightings.equals(totalSightingsBd)) {
+            BigDecimal ceilSightings =
+                hph
+                    .multiply(
+                        hoursCounted
+                            .add(new BigDecimal("0.1")));
+            BigDecimal floorSightings =
+                hph
+                    .multiply(
+                        hoursCounted
+                            .subtract(new BigDecimal("0.1")));
+            if (totalSightingsBd.compareTo(floorSightings) <= 0
+                || totalSightingsBd.compareTo(ceilSightings) >= 0)
+            {
+                context.error(
+                    "hours_counted",
+                    "Make sure hours_counted is accurate to within 0.1 hours. "
+                    + "It is currently inconsistent with hph and total_sightings. "
+                    + "Assuming " + hph + " hph is accurate and hours_counted is "
+                    + hoursCounted
+                    + " +/- 0.1, would allow range of " + floorSightings + " to "
+                    + ceilSightings + " sightings.");
+            }
+        }
+    }
     if (!context.fieldErrors.isEmpty()) {
         context.forward(request, response);
         return;
@@ -400,6 +485,10 @@
 %>
 <p>Validation successful!</p>
 <%
+    if (!debug) {
+        context.appendToFile(date, location, hph, totalSpecies);
+    }
+
     // Compose email
     String mailSubject =
         "GGRO Hawkwatch: "
@@ -409,9 +498,9 @@
         "julianhyde@gmail.com"
         + ",jharley@parksconservancy.org";
     Date mailSentDate = new Date();
-    StringBuilder buf = new StringBuilder();
+    buf.setLength(0);
     String newline = System.getProperty("line.separator");
-    for (String name : parameters) {
+    for (String name : context.parameters) {
         buf.append(name)
             .append(": ")
             .append(context.paramValues.get(name))
@@ -456,7 +545,7 @@
 
 <%
     if (false) {
-        for (String parameter : parameters) {
+        for (String parameter : context.parameters) {
 %>
 <%= parameter + "=" + context.paramValues.get(parameter)
     + " (" + context.paramValues.get(parameter).getClass() + ")\n" %>
@@ -467,19 +556,23 @@
 
     // Compose tweet. For example:
     //      108 3.17h 34.11/h 5sp TUVU=42 OSPR=1 COHA=9 RTHA=45 AMKE=3
-    //      http://u.nu/8mb63#0831 I emerged from the NPS dorm this morning
-    //      amazed and dismayed...
+    //      http://u.nu/8mb63#0831 SLAK: I emerged from the NPS dorm this
+    //      morning amazed and dismayed...
+    //
+    // The 'h*' means that counting was on Slacker Hill.
 
     buf.setLength(0);
     buf.append(totalSightings)
         .append(' ')
         .append(hoursCounted)
-        .append("h ")
+        .append("h")
+        .append(location.equals("SLAK") ? "*" : "")
+        .append(" ")
         .append(hph)
         .append("/h ")
         .append(totalSpecies)
         .append("sp ");
-    for (String parameter : parameters) {
+    for (String parameter : context.parameters) {
         if (isCount(parameter)) {
             Integer count = (Integer) context.paramValues.get(parameter);
             if (count != null && count != 0 && parameter.length() == 4) {
@@ -494,36 +587,41 @@
     // abbrev for http://www.hydromatic.net/ggro/daily.jsp
     if (false) tweetUrl = "http://u.nu/8mb63";
     // abbrev for http://www.ggro.org/hawkwatch/dailyhw09.html
-    tweetUrl = "http://u.nu/5knx";
+    if (false) tweetUrl = "http://u.nu/5knx";
+    // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
+    if (false) tweetUrl = "http://u.nu/67aj3";
+    tweetUrl = "http://3.ly/ggro";
+    // shorter abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
     buf.append(tweetUrl);
     final String shortAnchor = "#" + new SimpleDateFormat("MMdd").format(date);
     if (buf.length() + shortAnchor.length() <= 140) {
         buf.append(shortAnchor);
     }
     String comments = (String) context.paramValues.get("comments");
+    String body = comments.replaceAll(newline, " ");
     if (buf.length() <= 137) {
         buf.append(" ");
-        buf.append(comments.replaceAll(newline, " "));
-        if (buf.length() > 140) {
-            int i = 138;
-            while (i > 0 && buf.charAt(i) != ' ') {
-                --i;
-            }
-            while (i > 0 && buf.charAt(i) == ' ') {
-                --i;
-            }
-            buf.setLength(i + 1);
-            buf.append("...");
+        buf.append(body);
+    }
+    if (buf.length() > 140) {
+        int i = 138;
+        while (i > 0 && buf.charAt(i) != ' ') {
+            --i;
         }
+        while (i > 0 && buf.charAt(i) == ' ') {
+            --i;
+        }
+        buf.setLength(i + 1);
+        buf.append("...");
     }
     String tweet = buf.toString();
 
     // Send tweet.
-    if (!debug) {
+    if (true) {
         try {
             int responseCode = -1;
             for (int i = 0; i < 10; i++) {
-                URL url = new URL("http://twitter.com:80/statuses/update.xml");
+                URL url = new URL("http://twitter.com:80/statuses/update.xml?source=twitterandroid&lat=37.82853&long=-122.498771");
                 String name = "hawkcount";
                 String twitterPassword = password;
                 HttpURLConnection connection =
@@ -657,9 +755,9 @@
         contentElement.setAttribute("type", "html");
         buf.setLength(0);
         buf.append(
-            comments.replaceAll("\r\n", "<br/>\n")
-                .replaceAll("\n", "<br/>\n")
-                .replaceAll("\r", "<br/>\n"));
+            comments.replaceAll("\r\n", "<br/>")
+                .replaceAll("\n", "<br/>")
+                .replaceAll("\r", "<br/>"));
         buf.append("<br/>\n")
             .append("<br/>\n")
             .append("Total Sightings: ")
@@ -667,6 +765,7 @@
             .append("<br/>\n")
             .append("Hours Counted: ")
             .append(hoursCounted)
+            .append(location.equals("SLAK") ? "*" : "")
             .append("<br/>\n")
             .append("HPH: ")
             .append(hph)
@@ -676,7 +775,7 @@
             .append("<br/>\n");
         int unidCount = 0;
         int speciesCount = 0;
-        for (String name : parameters) {
+        for (String name : context.parameters) {
             if (!isCount(name)) {
                 continue;
             }
@@ -707,11 +806,11 @@
         // feed/entry/link
         Element linkElement = doc.createElement("link");
         entryElement.appendChild(linkElement);
-        linkElement.setAttribute("rel", "alternative");
+        linkElement.setAttribute("rel", "alternate");
         linkElement.setAttribute("type", "text/html");
         linkElement.setAttribute("type", "text/html");
         linkElement.setAttribute(
-            "href", "http://www.ggro.org/hawkwatch/dailyhw09.html#" + anchor);
+            "href", "http://www.ggro.org/events/hawkwatchToday.aspx#" + anchor);
         linkElement.setAttribute("title", title);
 
         // feed/entry/link#2
@@ -752,6 +851,7 @@
         throwable = e;
     }
     if (success) {
+        System.out.println("Local feed updated successfully.");
 %>
 <table>
 <tr>
@@ -763,6 +863,7 @@
 <p>Failed to update RSS feed:
 <%= throwable.getClass() %>: <%= throwable.getMessage() %></p>
 <%
+        System.out.println("Failed to update local feed.");
         throwable.printStackTrace();
         return;
     }
@@ -777,16 +878,18 @@
         new StreamGobbler(process.getErrorStream(), "err");
         int rc = process.waitFor();
         if (rc == 0) {
+            System.out.println("Publish succeeded.");
 %>
 <table>
 <tr>
 <td colspan='2'><p>Published successfully.</p>
 <p>Results should be visible at
-    <a href="http://www.ggro.org/hawkwatch/dailyhw09.html" target=_blank>Daily Hawkwatch Count Page</a> and
+    <a href="http://www.ggro.org/events/hawkwatchToday.aspx" target=_blank>Daily Hawkwatch Count Page</a> and
     <a href="http://www.ggro.org/feed.xml" target="_blank">feed</a>.</p></td>
 </table>
 <%
         } else {
+            System.out.println("Publish returned status " + rc);
             throw new RuntimeException("Command returned status " + rc);
         }
     } catch (Throwable t) {
@@ -794,6 +897,7 @@
 <p>Failed to update RSS feed:
 <%= throwable.getClass() %>: <%= throwable.getMessage() %></p>
 <%
+        System.out.println("Failed to publish.");
         t.printStackTrace();
     }
 %>
