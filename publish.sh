@@ -1,27 +1,35 @@
 #!/bin/bash
+# Script to publish feed and report to GGRO web site
 
-# Get the latest hawkwatch page (generated from feed.xml).
-cd /tmp
-rm -f dailyhw09.jsp dailyhw09.html
-wget http://www.hydromatic.net/ggro/dailyhw09.jsp
-mv dailyhw09.jsp dailyhw09.html
+retry=
+if [ "$1" == --retry ]; then
+    retry=true
+fi
+
+# Generate report.
+gawk -F, -f /home/jhyde/web2/ggro/web/report.awk /home/jhyde/web2/ggro/web/data.csv > /home/jhyde/web2/ggro/web/report.html
 
 # Upload hawkwatch page and feed.
-ftp -v -n ggro.org <<EOF
-user "ggroweb" "changeme"
-lcd /home/jhyde/ggro
-put feed.xml
-cd hawkwatch
-put dailyhw09.html
-lcd /home/jhyde/ggro
-cd ..
-put feed.xml
+#put /tmp/dailyhw09.html hawkwatch/dailyhw09.html
+while true; do
+    ftp -v -n ggro.org <<EOF | tee /tmp/ftp.log
+put /home/jhyde/web2/ggro/web/report.html report.html
+put /home/jhyde/web2/ggro/web/ggro-rappass.xml news/feed.xml
+put /home/jhyde/web2/ggro/web/feed.xml feed.xml
 quit
 EOF
 
-rm -f dailyhw09.jsp dailyhw09.html
 
-# Copy feed.xml so it appears as http://www.hydromatic.net/ggro.xml.
-cp /home/jhyde/ggro/feed.xml /home/jhyde/web/ggro.xml
+    if grep -q "Permission denied" /tmp/ftp.log \
+        && [ "$retry" ];
+    then
+        echo
+        date
+        echo "Failed to ftp. Will wait and retry."
+        sleep 1m
+    else
+        break
+    fi
+done
 
 # End publish.sh

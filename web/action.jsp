@@ -23,7 +23,7 @@
     // "http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html"
 
     // If true, doesn't tweet, and prints more diagnostics.
-    static final boolean debug = false;
+    static final boolean debug = true;
 
     // Same password for web form and for twitter.
     static final String pasword = "changeme";
@@ -187,7 +187,7 @@
         props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.port", "465");
- 
+
         Session mailSession = Session.getInstance(
             props,
             new javax.mail.Authenticator() {
@@ -207,7 +207,7 @@
         if (!debug) {
             Transport.send(message);
         }
-        System.out.println("action.jsp: email sent"); 
+        System.out.println("action.jsp: email sent");
     }
 
     static class Base64 {
@@ -294,8 +294,8 @@
             "hph",
             "total_species",
             "tuvu",
-            "ospr", 
-            "wtki",      
+            "ospr",
+            "wtki",
             "baea",
             "noha",
             "ssha",
@@ -444,14 +444,14 @@
         /**
          * Append to data file.
          * Fields: date,author,total_sightings,hours_counted,hph,total_species,tuvu, ... ,unid_raptor
-         */ 
+         */
         void appendToFile(
             Date date,
             BigDecimal hph,
             int totalSpecies)
             throws IOException
         {
-            FileWriter fw = new FileWriter(new File("/home/jhyde/web2/ggro/data.csv"), true);
+            FileWriter fw = new FileWriter(new File("/home/jhyde/web2/ggro/web/data.csv"), true);
             PrintWriter pw = new PrintWriter(fw);
             StringBuilder buf = new StringBuilder();
             buf.append(new SimpleDateFormat("yyyyMMdd").format(date))
@@ -613,7 +613,7 @@ System.out.println("action.jsp y");
     }
     String mailText = buf.toString();
 
-    if (true) 
+    if (true)
     try {
         email(mailTo, mailSubject, mailSentDate, mailText);
     } catch (MessagingException mex) {
@@ -737,7 +737,7 @@ System.out.println("action.jsp y");
     String timestamp =
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(mailSentDate);
     try {
-        File file = new File("/home/jhyde/web2/ggro/feed.xml");
+        File file = new File("/home/jhyde/web2/ggro/web/feed.xml");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(file);
@@ -947,7 +947,7 @@ System.out.println("action.jsp y");
     } catch (Throwable t) {
 %>
 <p>Failed to update RSS feed:
-<%= throwable.getClass() %>: <%= throwable.getMessage() %></p>
+<%= t.getClass() %>: <%= t.getMessage() %></p>
 <%
         System.out.println("Failed to publish.");
         t.printStackTrace();

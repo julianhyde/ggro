@@ -16,8 +16,8 @@
         {"Total Species", "total_species"},
         {"Species Counts"}, // break
         {"Turkey Vulture", "TUVU"},
-        {"Osprey", "OSPR"}, 
-        {"White-tailed Kite", "WTKI"},      
+        {"Osprey", "OSPR"},
+        {"White-tailed Kite", "WTKI"},
         {"Bald Eagle", "BAEA"},
         {"Northern Harrier", "NOHA"},
         {"Sharp-shinned Hawk", "SSHA"},
