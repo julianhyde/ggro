@@ -140,8 +140,8 @@ END {
     printf "</head>\n";
     printf "<body>\n";
     printf "<h1>GGRO reports</h1>\n";
-    printf "<p>These reports are updated daily based on the data in the <a href='events/hawkwatchToday.aspx'>Hawkwatch Today!</a> blog.</p>\n";
-    printf "<p>Data have not been entirely checked &mdash; contact Buzz Hull at bhull@parksconservancy.org for final results and for permission to use.</p>\n";
+    printf "<p>These reports are updated daily based on the data in the <a href='http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html'>Daily Hawk Count</a> blog.</p>\n";
+    printf "<p>Data have not been entirely checked &mdash; contact Chris Briggs at cbriggs@parksconservancy.org for final results and for permission to use.</p>\n";
 
     if (total_hours + 0 == 0) {
         # Avoid divide-by-zero at start of season
@@ -250,11 +250,11 @@ END {
             printf "<td>%s</td>", year_months[month];
             prev_month = month;
         }
-        printf "<td><a href='events/hawkwatchToday.aspx#%s' target=_new>%d</a></td>", day, day_of_month;
+        printf "<td><a href='http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html#%s' target=_new>%d</a></td>", day, day_of_month;
         year = substr(day, 1, 4) + 0;
         month = substr(day, 5, 2) + 0;
         day_of_month = substr(day, 7, 2) + 0;
-        day_of_week = (julian(year, month, day_of_month) + 5) % 7;
+        day_of_week = (julian(year, month, day_of_month) + 6) % 7;
         printf "<td align=right>%s&nbsp;%s</td>", \
             week_days[day_of_week], \
             ((julian(1, month, day_of_month - (day_of_week + 6) % 7) + day_offset) % 14) < 7 ? "I" : "II";

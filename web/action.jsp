@@ -1,4 +1,4 @@
-<%-- Copyright (C) 2009-2012 Julian Hyde --%>
+<%-- Copyright (C) 2009-2013 Julian Hyde --%>
 <%-- $Id: action.jsp 4 2009-09-07 21:19:10Z julianhyde $ --%>
 <%@ page language="java" %>
 <%@ page import="java.io.*" %>
@@ -17,11 +17,17 @@
 <%@ page import="javax.mail.PasswordAuthentication" %>
 <%@ page import="java.net.*" %>
 <%!
+
+    // "http://www.ggro.org/hawkwatch/dailyhw09.html"
+    // "http://www.ggro.org/events/hawkwatchToday.aspx"
+    // "http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html"
+
     // If true, doesn't tweet, and prints more diagnostics.
     static final boolean debug = false;
 
     // Same password for web form and for twitter.
-    static final String password = "changeme";
+    static final String pasword = "changeme";
+    static final String uncle = "changeme";
 
     static String htmlEncode(String s) {
         return s.replaceAll("\r\n", "<br/>")
@@ -174,7 +180,6 @@
         throws MessagingException
     {
         final String username = "julianhyde@gmail.com";
-        final String password = "changeme";
 
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
@@ -187,7 +192,7 @@
             props,
             new javax.mail.Authenticator() {
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(username, password);
+                    return new PasswordAuthentication(username, uncle);
                 }
             });
 
@@ -331,11 +336,18 @@
                 error(paramName, "Value is required");
                 return null;
             }
+            if (paramName.equals("author")) {
+                if (value.contains(",")) {
+                    error(
+                        paramName,
+                        "Author field must not contain commas.");
+                }
+            }
             if (paramName.equals("password")) {
                 if (!value.equals(password)) {
                     error(
                         paramName,
-                        "Invalid password. Ask Jill Harley for the correct password.");
+                        "Invalid password. Ask Laura Young for the correct password.");
                 } else {
                     // Mask out password so it doesn't appear in emails etc.
                     value = "xxx";
@@ -439,7 +451,7 @@
             int totalSpecies)
             throws IOException
         {
-            FileWriter fw = new FileWriter(new File("/home/jhyde/ggro/data.csv"), true);
+            FileWriter fw = new FileWriter(new File("/home/jhyde/web2/ggro/data.csv"), true);
             PrintWriter pw = new PrintWriter(fw);
             StringBuilder buf = new StringBuilder();
             buf.append(new SimpleDateFormat("yyyyMMdd").format(date))
@@ -589,7 +601,7 @@ System.out.println("action.jsp y");
     String mailFrom = "julian@hydromatic.net";
     String mailTo =
         "julianhyde@gmail.com"
-        + ",jharley@parksconservancy.org";
+        + ",lyoung@parksconservancy.org";
     Date mailSentDate = new Date();
     buf.setLength(0);
     String newline = System.getProperty("line.separator");
@@ -601,7 +613,7 @@ System.out.println("action.jsp y");
     }
     String mailText = buf.toString();
 
-    if (false) 
+    if (true) 
     try {
         email(mailTo, mailSubject, mailSentDate, mailText);
     } catch (MessagingException mex) {
@@ -666,7 +678,10 @@ System.out.println("action.jsp y");
     // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
     if (false) tweetUrl = "http://u.nu/67aj3";
     if (false) tweetUrl = "http://3.ly/ggro";
-    if (true) tweetUrl = "is.gd/PbDDqy";
+    // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
+    if (false) tweetUrl = "is.gd/PbDDqy";
+    // abbrev for http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html
+    if (true) tweetUrl = "is.gd/GxYvyF";
     if (false) tweetUrl = "t.co/mzFFpTr";
     if (false) tweetUrl = "http://www.ggro.org/events/hawkwatchToday.aspx";
     tweetUrl += "#" + new SimpleDateFormat("MMdd").format(date);
@@ -681,7 +696,7 @@ System.out.println("action.jsp y");
         buf.append(body);
     }
     if (buf.length() > 140) {
-        int i = 137;
+        int i = 136;
         while (i > 0 && buf.charAt(i) != ' ') {
             --i;
         }
@@ -692,6 +707,7 @@ System.out.println("action.jsp y");
         buf.append("...");
     }
     String tweet = buf.toString().replace(placeholder, tweetUrl);
+    System.out.println("tweet: " + tweet);
 
     // Send tweet.
     if (true) {
@@ -721,7 +737,7 @@ System.out.println("action.jsp y");
     String timestamp =
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(mailSentDate);
     try {
-        File file = new File("/home/jhyde/ggro/feed.xml");
+        File file = new File("/home/jhyde/web2/ggro/feed.xml");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(file);
@@ -846,7 +862,7 @@ System.out.println("action.jsp y");
         linkElement.setAttribute("type", "text/html");
         linkElement.setAttribute("type", "text/html");
         linkElement.setAttribute(
-            "href", "http://www.ggro.org/events/hawkwatchToday.aspx#" + anchor);
+            "href", "http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html#" + anchor);
         linkElement.setAttribute("title", title);
 
         // feed/entry/link#2
@@ -909,7 +925,7 @@ System.out.println("action.jsp y");
     // Run shell script to publish.
     try {
         final Runtime runtime = Runtime.getRuntime();
-        final Process process = runtime.exec("/home/jhyde/ggro/publish.sh");
+        final Process process = runtime.exec("/home/jhyde/web2/ggro/publish.sh");
         new StreamGobbler(process.getInputStream(), "out");
         new StreamGobbler(process.getErrorStream(), "err");
         int rc = process.waitFor();
@@ -920,7 +936,7 @@ System.out.println("action.jsp y");
 <tr>
 <td colspan='2'><p>Published successfully.</p>
 <p>Results should be visible at
-    <a href="http://www.ggro.org/events/hawkwatchToday.aspx" target=_blank>Daily Hawkwatch Count Page</a> and
+    <a href="http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html" target=_blank>Daily Hawkwatch Count Page</a> and
     <a href="http://www.ggro.org/feed.xml" target="_blank">feed</a>.</p></td>
 </table>
 <%

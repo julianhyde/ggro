@@ -53,7 +53,7 @@
 
 <p>This form updates the
     <a href="http://www.ggro.org/feed.xml" target="_blank">RSS feed</a>
-    and <a href="http://www.ggro.org/hawkwatch/dailyhw09.html">Daily Update Page</a>,
+    and <a href="http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html">Daily Hawk Count page</a>,
     posts to <a href="http://twitter.com/hawkcount" target="_blank">Twitter</a>,
     and sends an email to administrators.</p>
 
