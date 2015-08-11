@@ -52,7 +52,9 @@ function intToString(d) {
     }
     return s;
 }
+
 FNR == 1 {
+    day_offset = 11; # 18 in previous years
     for (i = 1; i <= NF; i++) {
         field_names[i] = $i;
     }
@@ -141,6 +143,11 @@ END {
     printf "<p>These reports are updated daily based on the data in the <a href='events/hawkwatchToday.aspx'>Hawkwatch Today!</a> blog.</p>\n";
     printf "<p>Data have not been entirely checked &mdash; contact Buzz Hull at bhull@parksconservancy.org for final results and for permission to use.</p>\n";
 
+    if (total_hours + 0 == 0) {
+        # Avoid divide-by-zero at start of season
+        total_hours = 1;
+    }
+
     # Horizontal table
     if (0) {
     printf "<table frame=border cellpadding=2 cellspacing=3>\n";
@@ -176,7 +183,7 @@ END {
     printf "<th>Per hour</th>\n";
     for (i = 1; i <= field_count; i++) {
         if (isMeasure(i)) {
-            printf "<td>%.1f</td>\n", totals[i] / total_hours;
+            printf "<td>%.1f</td>\n", totals[i]; # / total_hours;
         }
     }
     printf "</tr>\n";
@@ -250,7 +257,7 @@ END {
         day_of_week = (julian(year, month, day_of_month) + 5) % 7;
         printf "<td align=right>%s&nbsp;%s</td>", \
             week_days[day_of_week], \
-            ((julian(1, month, day_of_month - (day_of_week + 6) % 7) + 18) % 14) < 7 ? "I" : "II";
+            ((julian(1, month, day_of_month - (day_of_week + 6) % 7) + day_offset) % 14) < 7 ? "I" : "II";
         printf "<td align=right>%s</td>", hoursToString(day_hours[i]);
         day_total = day_totals[i];
         hph = day_hphs[i];

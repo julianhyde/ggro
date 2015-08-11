@@ -1,4 +1,4 @@
-<%-- Copyright (C) 2009-2009 Julian Hyde --%>
+<%-- Copyright (C) 2009-2012 Julian Hyde --%>
 <%-- $Id: action.jsp 4 2009-09-07 21:19:10Z julianhyde $ --%>
 <%@ page language="java" %>
 <%@ page import="java.io.*" %>
@@ -797,16 +797,16 @@ System.out.println("action.jsp y");
                 .replaceAll("\r", "<br/>"));
         buf.append("<br/>\n")
             .append("<br/>\n")
-            .append("Total Sightings: ")
+            .append("<strong>Total Sightings:</strong> ")
             .append(totalSightings)
             .append("<br/>\n")
-            .append("Hours Counted: ")
+            .append("<strong>Hours Counted:</strong> ")
             .append(hoursCounted)
             .append("<br/>\n")
-            .append("HPH: ")
+            .append("<strong>HPH:</strong> ")
             .append(hph)
             .append("<br/>\n")
-            .append("Total Species: ")
+            .append("<strong>Total Species:</strong> ")
             .append(totalSpecies)
             .append("<br/>\n");
         int unidCount = 0;
@@ -824,11 +824,11 @@ System.out.println("action.jsp y");
                 && unidCount++ == 0)
             {
                 buf.append("<br/>\n")
-                    .append("Unidentified...")
+                    .append("<strong>Unidentified...</strong>")
                     .append("<br/>\n");
             } else if (speciesCount++ == 0) {
                 buf.append("<br/>\n")
-                    .append("Species Counts:")
+                    .append("<strong>Species Counts:</strong>")
                     .append("<br/>\n");
             }
             buf.append(toLong(name))
