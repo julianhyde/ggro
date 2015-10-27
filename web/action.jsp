@@ -23,7 +23,7 @@
     // "http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html"
 
     // If true, doesn't tweet, and prints more diagnostics.
-    static final boolean debug = true;
+    static final boolean debug = false;
 
     // Same password for web form and for twitter.
     static final String pasword = "changeme";
@@ -810,7 +810,8 @@ System.out.println("action.jsp y");
         buf.append(
             comments.replaceAll("\r\n", "<br/>")
                 .replaceAll("\n", "<br/>")
-                .replaceAll("\r", "<br/>"));
+                .replaceAll("\r", "<br/>")
+                .replaceAll("\u0092", "'"));
         buf.append("<br/>\n")
             .append("<br/>\n")
             .append("<strong>Total Sightings:</strong> ")

@@ -13,6 +13,7 @@ gawk -F, -f /home/jhyde/web2/ggro/web/report.awk /home/jhyde/web2/ggro/web/data.
 #put /tmp/dailyhw09.html hawkwatch/dailyhw09.html
 while true; do
     ftp -v -n ggro.org <<EOF | tee /tmp/ftp.log
+user "ggroweb" "changeme"
 put /home/jhyde/web2/ggro/web/report.html report.html
 put /home/jhyde/web2/ggro/web/ggro-rappass.xml news/feed.xml
 put /home/jhyde/web2/ggro/web/feed.xml feed.xml
