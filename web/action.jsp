@@ -24,15 +24,21 @@
 
     // If true, doesn't tweet, and prints more diagnostics.
     static final boolean debug = false;
+    static final boolean enable = true;
+    static final String newline = System.getProperty("line.separator");
 
     // Same password for web form and for twitter.
-    static final String pasword = "changeme";
+    static final String password = "changeme";
     static final String uncle = "changeme";
 
     static String htmlEncode(String s) {
         return s.replaceAll("\r\n", "<br/>")
             .replaceAll("\n", "<br/>")
             .replaceAll("\r", "<br/>");
+    }
+
+    static boolean isSpace(char c) {
+        return c == ' ' || c == '.';
     }
 
     static boolean isCount(String paramName) {
@@ -208,6 +214,70 @@
             Transport.send(message);
         }
         System.out.println("action.jsp: email sent");
+    }
+
+    // Compose tweet. For example:
+    //      108 3.17h 34.11/h 5sp TUVU=42 OSPR=1 COHA=9 RTHA=45 AMKE=3
+    //      http://u.nu/8mb63#0831 SLAK: I emerged from the NPS dorm this
+    //      morning amazed and dismayed...
+    static String composeTweet(int totalSightings, int totalSpecies, BigDecimal hoursCounted, BigDecimal hph, Date date, Context context) {
+        final StringBuilder buf = new StringBuilder();
+        buf.append(totalSightings)
+            .append(' ')
+            .append(hoursCounted)
+            .append("h ")
+            .append(hph)
+            .append("/h ")
+            .append(totalSpecies)
+            .append("sp ");
+        for (String parameter : context.parameters) {
+            if (isCount(parameter)) {
+                Integer count = (Integer) context.paramValues.get(parameter);
+                if (count != null && count != 0 && parameter.length() == 4) {
+                    buf.append(parameter.toUpperCase())
+                        .append('=')
+                        .append(count)
+                        .append(' ');
+                }
+            }
+        }
+        String tweetUrl;
+        // abbrev for http://www.hydromatic.net/ggro/daily.jsp
+        if (false) tweetUrl = "http://u.nu/8mb63";
+        // abbrev for http://www.ggro.org/hawkwatch/dailyhw09.html
+        if (false) tweetUrl = "http://u.nu/5knx";
+        // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
+        if (false) tweetUrl = "http://u.nu/67aj3";
+        if (false) tweetUrl = "http://3.ly/ggro";
+        // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
+        if (false) tweetUrl = "is.gd/PbDDqy";
+        // abbrev for http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html
+        if (true) tweetUrl = "is.gd/GxYvyF";
+        if (false) tweetUrl = "t.co/mzFFpTr";
+        if (false) tweetUrl = "http://www.ggro.org/events/hawkwatchToday.aspx";
+        tweetUrl += "#" + new SimpleDateFormat("MMdd").format(date);
+        String placeholder = "xxxxxxxxxxxxxxxxxxxxx"; // 22 chars
+        if (buf.length() + placeholder.length() <= 140) {
+            buf.append(placeholder);
+        }
+        String comments = (String) context.paramValues.get("comments");
+        String body = comments.replaceAll(newline, " ");
+        if (buf.length() <= 137) {
+            buf.append(" ");
+            buf.append(body);
+        }
+        if (buf.length() > 140) {
+            int i = 136;
+            while (i > 0 && !isSpace(buf.charAt(i))) {
+                --i;
+            }
+            while (i > 0 && isSpace(buf.charAt(i))) {
+                --i;
+            }
+            buf.setLength(i + 1);
+            buf.append("...");
+        }
+        return buf.toString().replace(placeholder, tweetUrl);
     }
 
     static class Base64 {
@@ -489,7 +559,7 @@
 <body>
 <%
 System.out.println("action.jsp at " + new Date());
-    StringBuilder buf = new StringBuilder();
+    final StringBuilder buf = new StringBuilder();
     Context context = new Context();
     Date date = null;
     for (int i = 0; i < context.parameters.length; ++i) {
@@ -594,6 +664,9 @@ System.out.println("action.jsp y");
         context.appendToFile(date, hph, totalSpecies);
     }
 
+    String tweet = composeTweet(totalSightings, totalSpecies, hoursCounted, hph, date, context);
+    System.out.println("tweet: " + tweet);
+
     // Compose email
     String mailSubject =
         "GGRO Hawkwatch: "
@@ -604,16 +677,18 @@ System.out.println("action.jsp y");
         + ",lyoung@parksconservancy.org";
     Date mailSentDate = new Date();
     buf.setLength(0);
-    String newline = System.getProperty("line.separator");
     for (String name : context.parameters) {
         buf.append(name)
             .append(": ")
             .append(context.paramValues.get(name))
             .append(newline);
     }
+    buf.append("tweet: ")
+        .append(tweet)
+        .append(newline);
     String mailText = buf.toString();
 
-    if (true)
+    if (enable)
     try {
         email(mailTo, mailSubject, mailSentDate, mailText);
     } catch (MessagingException mex) {
@@ -645,72 +720,8 @@ System.out.println("action.jsp y");
         return;
     }
 
-    // Compose tweet. For example:
-    //      108 3.17h 34.11/h 5sp TUVU=42 OSPR=1 COHA=9 RTHA=45 AMKE=3
-    //      http://u.nu/8mb63#0831 SLAK: I emerged from the NPS dorm this
-    //      morning amazed and dismayed...
-
-    buf.setLength(0);
-    buf.append(totalSightings)
-        .append(' ')
-        .append(hoursCounted)
-        .append("h ")
-        .append(hph)
-        .append("/h ")
-        .append(totalSpecies)
-        .append("sp ");
-    for (String parameter : context.parameters) {
-        if (isCount(parameter)) {
-            Integer count = (Integer) context.paramValues.get(parameter);
-            if (count != null && count != 0 && parameter.length() == 4) {
-                buf.append(parameter.toUpperCase())
-                    .append('=')
-                    .append(count)
-                    .append(' ');
-            }
-        }
-    }
-    String tweetUrl;
-    // abbrev for http://www.hydromatic.net/ggro/daily.jsp
-    if (false) tweetUrl = "http://u.nu/8mb63";
-    // abbrev for http://www.ggro.org/hawkwatch/dailyhw09.html
-    if (false) tweetUrl = "http://u.nu/5knx";
-    // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
-    if (false) tweetUrl = "http://u.nu/67aj3";
-    if (false) tweetUrl = "http://3.ly/ggro";
-    // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
-    if (false) tweetUrl = "is.gd/PbDDqy";
-    // abbrev for http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html
-    if (true) tweetUrl = "is.gd/GxYvyF";
-    if (false) tweetUrl = "t.co/mzFFpTr";
-    if (false) tweetUrl = "http://www.ggro.org/events/hawkwatchToday.aspx";
-    tweetUrl += "#" + new SimpleDateFormat("MMdd").format(date);
-    String placeholder = "xxxxxxxxxxxxxxxxxxxxx"; // 22 chars
-    if (buf.length() + placeholder.length() <= 140) {
-        buf.append(placeholder);
-    }
-    String comments = (String) context.paramValues.get("comments");
-    String body = comments.replaceAll(newline, " ");
-    if (buf.length() <= 137) {
-        buf.append(" ");
-        buf.append(body);
-    }
-    if (buf.length() > 140) {
-        int i = 136;
-        while (i > 0 && buf.charAt(i) != ' ') {
-            --i;
-        }
-        while (i > 0 && buf.charAt(i) == ' ') {
-            --i;
-        }
-        buf.setLength(i + 1);
-        buf.append("...");
-    }
-    String tweet = buf.toString().replace(placeholder, tweetUrl);
-    System.out.println("tweet: " + tweet);
-
     // Send tweet.
-    if (true) {
+    if (enable) {
         try {
             int responseCode = tweet(password, tweet, mailSentDate);
 %>
@@ -803,6 +814,7 @@ System.out.println("action.jsp y");
         titleElement.setTextContent(title);
 
         // feed/entry/content
+        final String comments = (String) context.paramValues.get("comments");
         Element contentElement = doc.createElement("content");
         entryElement.appendChild(contentElement);
         contentElement.setAttribute("type", "html");
@@ -924,14 +936,15 @@ System.out.println("action.jsp y");
 
 <%
     // Run shell script to publish.
-    try {
-        final Runtime runtime = Runtime.getRuntime();
-        final Process process = runtime.exec("/home/jhyde/web2/ggro/publish.sh");
-        new StreamGobbler(process.getInputStream(), "out");
-        new StreamGobbler(process.getErrorStream(), "err");
-        int rc = process.waitFor();
-        if (rc == 0) {
-            System.out.println("Publish succeeded.");
+    if (enable) {
+        try {
+            final Runtime runtime = Runtime.getRuntime();
+            final Process process = runtime.exec("/home/jhyde/web2/ggro/publish.sh");
+            new StreamGobbler(process.getInputStream(), "out");
+            new StreamGobbler(process.getErrorStream(), "err");
+            int rc = process.waitFor();
+            if (rc == 0) {
+                System.out.println("Publish succeeded.");
 %>
 <table>
 <tr>
@@ -941,17 +954,18 @@ System.out.println("action.jsp y");
     <a href="http://www.ggro.org/feed.xml" target="_blank">feed</a>.</p></td>
 </table>
 <%
-        } else {
-            System.out.println("Publish returned status " + rc);
-            throw new RuntimeException("Command returned status " + rc);
-        }
-    } catch (Throwable t) {
+            } else {
+                System.out.println("Publish returned status " + rc);
+                throw new RuntimeException("Command returned status " + rc);
+            }
+        } catch (Throwable t) {
 %>
 <p>Failed to update RSS feed:
 <%= t.getClass() %>: <%= t.getMessage() %></p>
 <%
-        System.out.println("Failed to publish.");
-        t.printStackTrace();
+            System.out.println("Failed to publish.");
+            t.printStackTrace();
+        }
     }
 %>
 

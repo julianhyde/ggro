@@ -54,7 +54,7 @@ function intToString(d) {
 }
 
 FNR == 1 {
-    day_offset = 11; # 18 in previous years
+    day_offset = 18;
     for (i = 1; i <= NF; i++) {
         field_names[i] = $i;
     }
