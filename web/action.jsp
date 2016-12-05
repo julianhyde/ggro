@@ -252,11 +252,12 @@
         // abbrev for http://www.ggro.org/events/hawkwatchToday.aspx
         if (false) tweetUrl = "is.gd/PbDDqy";
         // abbrev for http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html
-        if (true) tweetUrl = "is.gd/GxYvyF";
+        if (false) tweetUrl = "is.gd/GxYvyF";
+        if (true) tweetUrl = "http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html";
         if (false) tweetUrl = "t.co/mzFFpTr";
         if (false) tweetUrl = "http://www.ggro.org/events/hawkwatchToday.aspx";
         tweetUrl += "#" + new SimpleDateFormat("MMdd").format(date);
-        String placeholder = "xxxxxxxxxxxxxxxxxxxxx"; // 22 chars
+        String placeholder = "xxxxxxxxxxxxxxxxxxxxxx"; // 23 chars
         if (buf.length() + placeholder.length() <= 140) {
             buf.append(placeholder);
         }
