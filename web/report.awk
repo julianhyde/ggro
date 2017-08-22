@@ -254,7 +254,7 @@ END {
         year = substr(day, 1, 4) + 0;
         month = substr(day, 5, 2) + 0;
         day_of_month = substr(day, 7, 2) + 0;
-        day_of_week = (julian(year, month, day_of_month) + 6) % 7;
+        day_of_week = (julian(year, month, day_of_month) + 7) % 7;
         printf "<td align=right>%s&nbsp;%s</td>", \
             week_days[day_of_week], \
             ((julian(1, month, day_of_month - (day_of_week + 6) % 7) + day_offset) % 14) < 7 ? "I" : "II";
