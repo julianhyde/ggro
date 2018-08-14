@@ -675,7 +675,7 @@ System.out.println("action.jsp y");
     String mailFrom = "julian@hydromatic.net";
     String mailTo =
         "julianhyde@gmail.com"
-        + ",lyoung@parksconservancy.org";
+        + ",swilson@parksconservancy.org";
     Date mailSentDate = new Date();
     buf.setLength(0);
     for (String name : context.parameters) {
