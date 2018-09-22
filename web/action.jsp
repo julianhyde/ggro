@@ -1,4 +1,4 @@
-<%-- Copyright (C) 2009-2013 Julian Hyde --%>
+<%-- Copyright (C) 2009-2018 Julian Hyde --%>
 <%-- $Id: action.jsp 4 2009-09-07 21:19:10Z julianhyde $ --%>
 <%@ page language="java" %>
 <%@ page import="java.io.*" %>
@@ -115,8 +115,11 @@
     static int tweet(String password, String tweet, Date mailSentDate) throws java.io.IOException {
         if (false) {
             return tweetViaApi(password, tweet, mailSentDate);
+        } else if (false) {
+            return tweetViaEmail(password, tweet, mailSentDate);
+        } else {
+            return 0;
         }
-        return tweetViaEmail(password, tweet, mailSentDate);
     }
 
     static int tweetViaApi(String password, String tweet, Date mailSentDate) throws java.io.IOException {
@@ -258,17 +261,18 @@
         if (false) tweetUrl = "http://www.ggro.org/events/hawkwatchToday.aspx";
         tweetUrl += "#" + new SimpleDateFormat("MMdd").format(date);
         String placeholder = "xxxxxxxxxxxxxxxxxxxxxx"; // 23 chars
-        if (buf.length() + placeholder.length() <= 140) {
+        final int maxTweet = 280;
+        if (buf.length() + placeholder.length() <= maxTweet) {
             buf.append(placeholder);
         }
         String comments = (String) context.paramValues.get("comments");
         String body = comments.replaceAll(newline, " ");
-        if (buf.length() <= 137) {
+        if (buf.length() <= maxTweet - 3) {
             buf.append(" ");
             buf.append(body);
         }
-        if (buf.length() > 140) {
-            int i = 136;
+        if (buf.length() > maxTweet) {
+            int i = maxTweet - 4;
             while (i > 0 && !isSpace(buf.charAt(i))) {
                 --i;
             }
