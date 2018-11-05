@@ -141,7 +141,7 @@ END {
     printf "<body>\n";
     printf "<h1>GGRO reports</h1>\n";
     printf "<p>These reports are updated daily based on the data in the <a href='http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html'>Daily Hawk Count</a> blog.</p>\n";
-    printf "<p>Data have not been entirely checked &mdash; contact <a href='mailto:tely@parksconservancy.org'>Teresa Ely</a> for final results and for permission to use.</p>\n";
+    printf "<p>Data have not been entirely checked &mdash; contact <a href='mailto:swilson@parksconservancy.org'>Step Wilson</a> for final results and for permission to use.</p>\n";
 
     if (total_hours + 0 == 0) {
         # Avoid divide-by-zero at start of season
