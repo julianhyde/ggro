@@ -844,6 +844,7 @@ System.out.println("action.jsp y");
             .append(totalSpecies)
             .append("<br/>\n");
         int unidCount = 0;
+        int unidTotal = 0;
         int speciesCount = 0;
         for (String name : context.parameters) {
             if (!isCount(name)) {
@@ -865,9 +866,17 @@ System.out.println("action.jsp y");
                     .append("<strong>Species Counts:</strong>")
                     .append("<br/>\n");
             }
+            if (name.startsWith("unid_")) {
+                unidTotal += count;
+            }
             buf.append(toLong(name))
                 .append(": ")
                 .append(count)
+                .append("<br/>\n");
+        }
+        if (unidTotal > 0) {
+            buf.append("Total unidentified: ")
+                .append(unidTotal)
                 .append("<br/>\n");
         }
 
