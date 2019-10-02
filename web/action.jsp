@@ -580,9 +580,9 @@ System.out.println("action.jsp at " + new Date());
         } else if (name.equals("hours_counted")) {
             BigDecimal decimal = context.validateDecimal(name, true);
             if (decimal != null
-                && (decimal.compareTo(new BigDecimal("6")) > 0
+                && (decimal.compareTo(new BigDecimal("24")) > 0
                     || decimal.compareTo(new BigDecimal("0")) < 0)) {
-                context.error(name, "Must be between 0 and 6");
+                context.error(name, "Must be between 0 and 24");
             }
         } else if (name.equals("hph")) {
             context.validateDecimal(name, true);
