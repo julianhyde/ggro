@@ -828,7 +828,13 @@ System.out.println("action.jsp y");
             comments.replaceAll("\r\n", "<br/>")
                 .replaceAll("\n", "<br/>")
                 .replaceAll("\r", "<br/>")
-                .replaceAll("\u0092", "'"));
+                .replaceAll("\u0085", "...") // &#133; windows ellipsis
+                .replaceAll("\u0091", "'") // &#145; windows high 6 single quote
+                .replaceAll("\u0092", "'") // &#146; windows high 9 single quote
+                .replaceAll("\u0093", "\"") // &#147; windows high 6 double quote
+                .replaceAll("\u0094", "\"") // &#148; windows high 9 double quote
+                .replaceAll("\u0096", "-") // &#150; windows en dash
+                .replaceAll("\u0097", "--")); // &#151; windows em dash
         buf.append("<br/>\n")
             .append("<br/>\n")
             .append("<strong>Total Sightings:</strong> ")
