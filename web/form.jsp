@@ -54,7 +54,7 @@
 <p>This form updates the
     <a href="http://www.ggro.org/feed.xml" target="_blank">RSS feed</a>
     and <a href="http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html">Daily Hawk Count page</a>,
-    posts to <a href="http://twitter.com/hawkcount" target="_blank">Twitter</a>,
+    posts to <a href="http://twitter.com/ggro_raptors" target="_blank">Twitter</a>,
     and sends an email to administrators.</p>
 
 <p>For assistance, contact Julian Hyde (julian@hydromatic.net; (415) 336-3873).</p>

@@ -126,7 +126,7 @@
         int responseCode = -1;
         for (int i = 0; i < 10; i++) {
             URL url = new URL("http://twitter.com:80/statuses/update.xml?source=twitterandroid&lat=37.82853&long=-122.498771");
-            String name = "hawkcount";
+            String name = "ggro_raptors";
             String twitterPassword = password;
             HttpURLConnection connection =
                 (HttpURLConnection) url.openConnection();
