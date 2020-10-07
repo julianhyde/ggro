@@ -52,7 +52,16 @@ function intToString(d) {
     }
     return s;
 }
-
+function bitCount(i,    n) {
+    n = 0;
+    while (i > 0) {
+        if (i % 2 == 1) {
+            ++n;
+        }
+        i = int(i / 2);
+    }
+    return n;
+}
 FNR == 1 {
     day_offset = 18;
     for (i = 1; i <= NF; i++) {
@@ -100,6 +109,7 @@ FNR == 1 {
     year_months[11] = "November";
     year_months[12] = "December";
     day_count = 0;
+    species = 0;
 }
 FNR > 1 {
     date = $1;
@@ -108,13 +118,23 @@ FNR > 1 {
     hours_counted = $4;
     hph = $5;
     total_species = $6;
+    day_species = 0;
     for (i = 1; i <= NF; i++) {
         totals[i] += $i;
+        if (i >= 7 && i < 25 && $i > 0) {
+            day_species = or(day_species, lshift(1, i - 7));
+        }
         dow_totals[i, FNR % 7] = $i;
         week_totals[i] = 0;
         for (j = 0; j < 7; j++) {
             week_totals[i] += dow_totals[i, j];
         }
+    }
+    species = or(species, day_species);
+    dow_species[FNR % 7] = day_species;
+    week_species = 0;
+    for (j = 0; j < 7; j++) {
+        week_species = or(week_species, dow_species[j]);
     }
     days[day_count] = date;
     day_totals[day_count] = total_sightings;
@@ -140,7 +160,7 @@ END {
     printf "</head>\n";
     printf "<body>\n";
     printf "<h1>GGRO reports</h1>\n";
-    printf "<p>These reports are updated daily based on the data in the <a href='http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html'>Daily Hawk Count</a> blog.</p>\n";
+    printf "<p>These reports are updated daily based on the data in the <a href='http://www.parksconservancy.org/programs/daily-hawk-count'>Daily Hawk Count</a> blog.</p>\n";
     printf "<p>Data have not been entirely checked &mdash; contact <a href='mailto:swilson@parksconservancy.org'>Step Wilson</a> for final results and for permission to use.</p>\n";
 
     if (total_hours + 0 == 0) {
@@ -214,6 +234,11 @@ END {
         intToString(totals[3]), \
         totals[3] / total_hours, \
         intToString(week_totals[3]);
+    printf "<tr><td>%s</td><td align=right>%d</td><td align=right>%s</td><td align=right>%d</td>\n", \
+        "Species", \
+        bitCount(species),  \
+        "-", \
+        bitCount(week_species);
     printf "<tr><td>%s</td><td align=right>%s</td><td align=right>%.1f</td><td align=right>%.1f</td>\n", \
         "Hours", \
         totals[4], \
@@ -250,7 +275,7 @@ END {
             printf "<td>%s</td>", year_months[month];
             prev_month = month;
         }
-        printf "<td><a href='http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html#%s' target=_new>%d</a></td>", day, day_of_month;
+        printf "<td><a href='http://www.parksconservancy.org/programs/daily-hawk-count#%s' target=_new>%d</a></td>", day, day_of_month;
         year = substr(day, 1, 4) + 0;
         month = substr(day, 5, 2) + 0;
         day_of_month = substr(day, 7, 2) + 0;
