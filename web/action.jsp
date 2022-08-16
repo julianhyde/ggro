@@ -27,6 +27,9 @@
     static final boolean enable = true;
     static final String newline = System.getProperty("line.separator");
 
+    // Root directory of application
+    static final String baseDir = "/home/jhyde/web2/ggro";
+
     // Same password for web form and for twitter.
     static final String password = "changeme";
     static final String uncle = "changeme";
@@ -526,7 +529,7 @@
             int totalSpecies)
             throws IOException
         {
-            FileWriter fw = new FileWriter(new File("/home/jhyde/web2/ggro/web/data.csv"), true);
+            FileWriter fw = new FileWriter(new File(baseDir + "/web/data.csv"), true);
             PrintWriter pw = new PrintWriter(fw);
             StringBuilder buf = new StringBuilder();
             buf.append(new SimpleDateFormat("yyyyMMdd").format(date))
@@ -753,7 +756,7 @@ System.out.println("action.jsp y");
     String timestamp =
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(mailSentDate);
     try {
-        File file = new File("/home/jhyde/web2/ggro/web/feed.xml");
+        File file = new File(baseDir + "/web/feed.xml");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(file);
@@ -959,7 +962,7 @@ System.out.println("action.jsp y");
     if (enable) {
         try {
             final Runtime runtime = Runtime.getRuntime();
-            final Process process = runtime.exec("/home/jhyde/web2/ggro/publish.sh");
+            final Process process = runtime.exec(baseDir + "/publish.sh");
             new StreamGobbler(process.getInputStream(), "out");
             new StreamGobbler(process.getErrorStream(), "err");
             int rc = process.waitFor();
