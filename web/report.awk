@@ -161,7 +161,7 @@ END {
     printf "<body>\n";
     printf "<h1>GGRO reports</h1>\n";
     printf "<p>These reports are updated daily based on the data in the <a href='http://www.parksconservancy.org/programs/daily-hawk-count'>Daily Hawk Count</a> blog.</p>\n";
-    printf "<p>Data have not been entirely checked &mdash; contact <a href='mailto:swilson@parksconservancy.org'>Step Wilson</a> for final results and for permission to use.</p>\n";
+    printf "<p>Data have not been entirely checked &mdash; contact <a href='mailto:AFish@parksconservancy.org'>Allen Fish</a> for final results and for permission to use.</p>\n";
 
     if (total_hours + 0 == 0) {
         # Avoid divide-by-zero at start of season
@@ -279,10 +279,11 @@ END {
         year = substr(day, 1, 4) + 0;
         month = substr(day, 5, 2) + 0;
         day_of_month = substr(day, 7, 2) + 0;
-        day_of_week = (julian(year, month, day_of_month) + 7) % 7;
+        day_of_fortnight = (julian(year, month, day_of_month) + 1) % 14;
+        day_of_week = day_of_fortnight % 7;
         printf "<td align=right>%s&nbsp;%s</td>", \
             week_days[day_of_week], \
-            ((julian(1, month, day_of_month - (day_of_week + 6) % 7) + day_offset) % 14) < 7 ? "I" : "II";
+            day_of_fortnight >= 7 ? "I" : "II";
         printf "<td align=right>%s</td>", hoursToString(day_hours[i]);
         day_total = day_totals[i];
         hph = day_hphs[i];
