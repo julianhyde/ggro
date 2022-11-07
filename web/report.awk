@@ -283,7 +283,7 @@ END {
         day_of_week = day_of_fortnight % 7;
         printf "<td align=right>%s&nbsp;%s</td>", \
             week_days[day_of_week], \
-            day_of_fortnight >= 7 ? "I" : "II";
+            (day_of_fortnight >= 1 && day_of_fortnight < 8) ? "II" : "I";
         printf "<td align=right>%s</td>", hoursToString(day_hours[i]);
         day_total = day_totals[i];
         hph = day_hphs[i];

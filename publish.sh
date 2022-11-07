@@ -7,8 +7,14 @@ if [ "$1" == --retry ]; then
 fi
 
 # Generate report.
-BASE_DIR=/home/jhyde/web2/ggro
+BASE_DIR=/home/jhyde/dev/ggro
 gawk -F, -f ${BASE_DIR}/web/report.awk ${BASE_DIR}/web/data.csv > ${BASE_DIR}/web/report.html
+
+# Fix permissions.
+# (Git commit, checkout seem to mess them up.)
+chmod 666 ${BASE_DIR}/web/feed.xml
+chmod 777 ${BASE_DIR}/web/report.html
+chmod 777 ${BASE_DIR}/web/data.csv
 
 # Upload hawkwatch page and feed.
 #put /tmp/dailyhw09.html hawkwatch/dailyhw09.html
@@ -19,6 +25,7 @@ user "ggroweb" "changeme"
 put web/report.html report.html
 put web/ggro-rappass.xml news/feed.xml
 put web/feed.xml feed.xml
+put web/data.csv data.csv
 quit
 EOF
 

@@ -10,11 +10,11 @@
 import xml.etree.ElementTree as ET
 import re
 
-tree = ET.parse('web/archive/2019/feed.xml')
+tree = ET.parse('web/archive/2022/feed.xml')
 root = tree.getroot()
 ns = "{http://www.w3.org/2005/Atom}"
 print("<html>")
-print("<head><title>Daily Hawk Count (2019)</title></head>")
+print("<head><title>Daily Hawk Count (2022)</title></head>")
 print("<body>")
 for entry in root.iter(ns + "entry"):
   # "Sunday, December 02, 2018"

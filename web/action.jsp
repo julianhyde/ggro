@@ -21,6 +21,7 @@
     // "http://www.ggro.org/hawkwatch/dailyhw09.html"
     // "http://www.ggro.org/events/hawkwatchToday.aspx"
     // "http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html"
+    // "https://www.parksconservancy.org/programs/daily-hawk-count"
 
     // If true, doesn't tweet, and prints more diagnostics.
     static final boolean debug = false;
@@ -28,7 +29,7 @@
     static final String newline = System.getProperty("line.separator");
 
     // Root directory of application
-    static final String baseDir = "/home/jhyde/web2/ggro";
+    static final String baseDir = "/home/jhyde/dev/ggro";
 
     // Same password for web form and for twitter.
     static final String password = "changeme";
@@ -260,6 +261,7 @@
         // abbrev for http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html
         if (false) tweetUrl = "is.gd/GxYvyF";
         if (true) tweetUrl = "http://www.parksconservancy.org/conservation/plants-animals/raptors/research/daily-hawk-count.html";
+        if (true) tweetUrl = "https://www.parksconservancy.org/programs/daily-hawk-count";
         if (false) tweetUrl = "t.co/mzFFpTr";
         if (false) tweetUrl = "http://www.ggro.org/events/hawkwatchToday.aspx";
         tweetUrl += "#" + new SimpleDateFormat("MMdd").format(date);
@@ -523,7 +525,7 @@
          * Append to data file.
          * Fields: date,author,total_sightings,hours_counted,hph,total_species,tuvu, ... ,unid_raptor
          */
-        void appendToFile(
+        String appendToFile(
             Date date,
             BigDecimal hph,
             int totalSpecies)
@@ -553,9 +555,11 @@
                         .append(count);
                 }
             }
-            pw.println(buf.toString());
+            String line = buf.toString();
+            pw.println(line);
             pw.close();
             fw.close();
+            return line;
         }
     }
 %>
@@ -668,8 +672,9 @@ System.out.println("action.jsp y");
 %>
 <p>Validation successful!</p>
 <%
+    String csvLine = "";
     if (!debug) {
-        context.appendToFile(date, hph, totalSpecies);
+        csvLine = context.appendToFile(date, hph, totalSpecies);
     }
 
     String tweet = composeTweet(totalSightings, totalSpecies, hoursCounted, hph, date, context);
@@ -693,6 +698,10 @@ System.out.println("action.jsp y");
     }
     buf.append("tweet: ")
         .append(tweet)
+        .append(newline);
+    buf.append(newline);
+    buf.append("csv: ")
+        .append(csvLine)
         .append(newline);
     String mailText = buf.toString();
 
