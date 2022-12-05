@@ -1,14 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Reads the XML feed and generates an HTML web page
 #
 # Usage:
-#   python ./feed-to-page.py > web/archive/2018/page.html
+#   python3 ./feed-to-page.py > web/archive/2018/page.html
 #
 # (replacing 2018 with the current year)
 #
 import xml.etree.ElementTree as ET
 import re
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 tree = ET.parse('web/archive/2022/feed.xml')
 root = tree.getroot()
@@ -24,7 +27,7 @@ for entry in root.iter(ns + "entry"):
   tag = re.sub(r".*-", "", id)
   print("<h2><a name='" + tag + "'/>" + title + "</h2>")
   content = entry.find(ns + "content").text
-  print("<p>" + content + "</p>").encode('utf-8')
+  print("<p>" + content + "</p>")
   print
 print("</body>")
 print("</html>")
