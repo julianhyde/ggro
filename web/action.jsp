@@ -1,7 +1,9 @@
-<%-- Copyright (C) 2009-2018 Julian Hyde --%>
+<%-- Copyright (C) 2009-2023 Julian Hyde --%>
 <%-- $Id: action.jsp 4 2009-09-07 21:19:10Z julianhyde $ --%>
 <%@ page language="java" %>
 <%@ page import="java.io.*" %>
+<%@ page import="java.nio.file.Files" %>
+<%@ page import="java.nio.file.StandardCopyOption" %>
 <%@ page import="javax.xml.transform.*" %>
 <%@ page import="javax.xml.transform.dom.DOMSource" %>
 <%@ page import="javax.xml.transform.stream.StreamResult" %>
@@ -192,10 +194,10 @@
         String mailText)
         throws MessagingException
     {
-        final String username = "julianhyde@gmail.com";
+        final String username = "jhyde";
 
         Properties props = new Properties();
-        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.host", "mail-relay.apache.org");
         props.put("mail.smtp.socketFactory.port", "465");
         props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.auth", "true");
@@ -210,7 +212,7 @@
             });
 
         MimeMessage message = new MimeMessage(mailSession);
-        message.setFrom(new InternetAddress("julianhyde@gmail.com"));
+        message.setFrom(new InternetAddress("jhyde@apache.org"));
         message.setRecipients(
             Message.RecipientType.TO,
             mailTo);
@@ -766,10 +768,15 @@ System.out.println("action.jsp y");
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(mailSentDate);
     try {
         File file = new File(baseDir + "/web/feed.xml");
+        File fileOld = new File(baseDir + "/web/feed-old.xml");
+        Files.copy(file.toPath(), fileOld.toPath(),
+            StandardCopyOption.REPLACE_EXISTING);
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(file);
+        Document doc = builder.parse(fileOld);
         final Element docElement = doc.getDocumentElement();
+
         Element feedElement;
         if (docElement.getNodeType() == Node.ELEMENT_NODE
             && docElement.getNodeName().equals("feed"))
@@ -971,12 +978,13 @@ System.out.println("action.jsp y");
     if (enable) {
         try {
             final Runtime runtime = Runtime.getRuntime();
-            final Process process = runtime.exec(baseDir + "/publish.sh");
-            new StreamGobbler(process.getInputStream(), "out");
-            new StreamGobbler(process.getErrorStream(), "err");
+            final String command = baseDir + "/publish.sh";
+            final Process process = runtime.exec(command);
+            new StreamGobbler(process.getInputStream(), "out").start();
+            new StreamGobbler(process.getErrorStream(), "err").start();
             int rc = process.waitFor();
             if (rc == 0) {
-                System.out.println("Publish succeeded.");
+                System.out.println("Publish succeeded; command: " + command);
 %>
 <table>
 <tr>

@@ -1,6 +1,10 @@
 #!/bin/bash
 # Script to publish feed and report to GGRO web site
 
+LFTP_USER="changeme"
+LFTP_PW="changeme"
+LFTP_HOST="changeme"
+
 retry=
 if [ "$1" == --retry ]; then
     retry=true
@@ -17,20 +21,19 @@ chmod 777 ${BASE_DIR}/web/report.html
 chmod 777 ${BASE_DIR}/web/data.csv
 
 # Upload hawkwatch page and feed.
-#put /tmp/dailyhw09.html hawkwatch/dailyhw09.html
 cd ${BASE_DIR}
+LOG=/tmp/lftp_${$}.log
 while true; do
-    ftp -v -n ggro.org <<EOF | tee /tmp/ftp.log
-user "ggroweb" "changeme"
-put web/report.html report.html
-put web/ggro-rappass.xml news/feed.xml
-put web/feed.xml feed.xml
-put web/data.csv data.csv
+    lftp -u "${LFTP_USER},${LFTP_PW}" "${LFTP_HOST}" <<EOF | tee ${LOG}
+set ssl:verify-certificate/90:8C:DA:04:E6:22:14:03:77:16:2A:2C:E8:4A:01:25:D0:0D:26:70 no
+put web/report.html
+put web/feed.xml
+put web/data.csv
+ls -trl
 quit
 EOF
 
-
-    if grep -q "Permission denied" /tmp/ftp.log \
+    if grep -q "Permission denied" ${LOG} \
         && [ "$retry" ];
     then
         echo
