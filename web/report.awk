@@ -75,7 +75,7 @@ FNR == 1 {
     species_name["noha"] = "Northern Harrier";
     species_name["ssha"] = "Sharp-shinned Hawk";
     species_name["coha"] = "Cooper's Hawk";
-    species_name["gosh"] = "Northern Goshawk";
+    species_name["agos"] = "American Goshawk";
     species_name["rsha"] = "Red-shouldered Hawk";
     species_name["bwha"] = "Broad-winged Hawk";
     species_name["swha"] = "Swainson's Hawk";
@@ -103,6 +103,7 @@ FNR == 1 {
     week_days[4] = "Thu";
     week_days[5] = "Fri";
     week_days[6] = "Sat";
+    year_months[7] = "July";
     year_months[8] = "August";
     year_months[9] = "September";
     year_months[10] = "October";

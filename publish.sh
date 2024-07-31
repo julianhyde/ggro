@@ -25,7 +25,7 @@ cd ${BASE_DIR}
 LOG=/tmp/lftp_${$}.log
 while true; do
     lftp -u "${LFTP_USER},${LFTP_PW}" "${LFTP_HOST}" <<EOF | tee ${LOG}
-set ssl:verify-certificate/90:8C:DA:04:E6:22:14:03:77:16:2A:2C:E8:4A:01:25:D0:0D:26:70 no
+set ssl:verify-certificate/D3:B1:2F:1F:20:31:53:2F:2F:EA:18:A0:FF:F6:6C:D9:D1:54:83:51 no
 put web/report.html
 put web/feed.xml
 put web/data.csv

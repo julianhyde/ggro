@@ -22,7 +22,7 @@
         {"Northern Harrier", "NOHA"},
         {"Sharp-shinned Hawk", "SSHA"},
         {"Cooper's Hawk", "COHA"},
-        {"Northern Goshawk", "GOSH"},
+        {"American Goshawk", "AGOS"},
         {"Red-shouldered Hawk", "RSHA"},
         {"Broad-winged Hawk", "BWHA"},
         {"Swainson's Hawk", "SWHA"},

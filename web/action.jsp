@@ -69,7 +69,7 @@
             {"Northern Harrier", "NOHA"},
             {"Sharp-shinned Hawk", "SSHA"},
             {"Cooper's Hawk", "COHA"},
-            {"Northern Goshawk", "GOSH"},
+            {"American Goshawk", "AGOS"},
             {"Red-shouldered Hawk", "RSHA"},
             {"Broad-winged Hawk", "BWHA"},
             {"Swainson's Hawk", "SWHA"},
@@ -382,7 +382,7 @@
             "noha",
             "ssha",
             "coha",
-            "gosh",
+            "agos",
             "rsha",
             "bwha",
             "swha",
@@ -436,7 +436,7 @@
                     paramValues.put(paramName, value);
                 }
             }
-            return value.trim();
+            return value == null ? null : value.trim();
         }
 
         Date validateDate(
@@ -689,7 +689,8 @@ System.out.println("action.jsp y");
     String mailFrom = "julian@hydromatic.net";
     String mailTo =
         "julianhyde@gmail.com"
-        + ",AFish@parksconservancy.org";
+        + ",afish@parksconservancy.org"
+        + ",rfielding@parksconservancy.org";
     Date mailSentDate = new Date();
     buf.setLength(0);
     for (String name : context.parameters) {
