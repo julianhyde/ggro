@@ -689,7 +689,6 @@ System.out.println("action.jsp y");
     String mailFrom = "julian@hydromatic.net";
     String mailTo =
         "julianhyde@gmail.com"
-        + ",afish@parksconservancy.org"
         + ",rfielding@parksconservancy.org";
     Date mailSentDate = new Date();
     buf.setLength(0);
@@ -699,10 +698,11 @@ System.out.println("action.jsp y");
             .append(context.paramValues.get(name))
             .append(newline);
     }
+    buf.append(newline);
     buf.append("tweet: ")
         .append(tweet)
+        .append(newline)
         .append(newline);
-    buf.append(newline);
     buf.append("csv: ")
         .append(csvLine)
         .append(newline);
